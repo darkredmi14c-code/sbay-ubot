@@ -31,17 +31,20 @@ export class UsersController {
 
   @Get('stats')
   async stats() {
-    const [employers, seekers, scammers, unseen] = await Promise.all([
-      this.usersService.countByType('employer'),
-      this.usersService.countByType('seeker'),
-      this.usersService.countByType('scammer'),
-      this.usersService.countUnseen(),
-    ]);
+    const [employers, seekers, scammers, unseen, pendingMessages] =
+      await Promise.all([
+        this.usersService.countByType('employer'),
+        this.usersService.countByType('seeker'),
+        this.usersService.countByType('scammer'),
+        this.usersService.countUnseen(),
+        this.usersService.countPendingMessages(),
+      ]);
     return {
       employers,
       seekers,
       scammers,
       unseen,
+      pendingMessages,
       total: employers + seekers + scammers,
     };
   }
@@ -59,6 +62,16 @@ export class UsersController {
   @Post('mark-all-seen')
   markAllSeen(@Query('type') type?: UserType) {
     return this.usersService.markAllSeen(type);
+  }
+
+  @Post('broadcast-messages')
+  broadcastMessages() {
+    return this.usersService.broadcastPendingMessages();
+  }
+
+  @Get('broadcast-messages/status')
+  broadcastStatus() {
+    return this.usersService.getBroadcastStatusFull();
   }
 
   @Post(':id/send-message')

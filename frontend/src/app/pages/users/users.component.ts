@@ -21,9 +21,11 @@ export class UsersComponent implements OnInit {
   error = '';
   message = '';
   sendingId: number | null = null;
+  changingTypeId: number | null = null;
 
   blockUserId = '';
   labels = USER_TYPE_LABELS;
+  readonly typeOptions: UserType[] = ['employer', 'seeker', 'scammer'];
   messageModalUser: UserRecord | null = null;
 
   constructor(private api: ApiService) {}
@@ -106,14 +108,41 @@ export class UsersComponent implements OnInit {
   }
 
   markScammer(user: UserRecord): void {
-    if (!confirm(`${user.telegramUserId} ni spamchi deb belgilaysizmi?`)) return;
-    this.api.patch(`/users/${user.id}/type`, { type: 'scammer' }).subscribe({
+    this.changeType(user, 'scammer');
+  }
+
+  changeType(user: UserRecord, type: UserType): void {
+    if (user.type === type) return;
+
+    const from = this.labels[user.type];
+    const to = this.labels[type];
+    if (!confirm(`${user.telegramUserId}: "${from}" → "${to}" ga o'zgartirilsinmi?`)) {
+      return;
+    }
+
+    this.changingTypeId = user.id;
+    this.api.patch<UserRecord>(`/users/${user.id}/type`, { type }).subscribe({
       next: () => {
-        this.message = 'Spamchi deb belgilandi';
+        this.message = `Tip o'zgartirildi: ${to}`;
+        this.changingTypeId = null;
+        if (this.messageModalUser?.id === user.id) {
+          this.messageModalUser = { ...this.messageModalUser, type };
+        }
         this.load();
       },
-      error: () => (this.error = 'Saqlash xatosi'),
+      error: () => {
+        this.error = 'Tip o\'zgartirish xatosi';
+        this.changingTypeId = null;
+      },
     });
+  }
+
+  onTypeSelect(user: UserRecord, event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const type = select.value as UserType;
+    if (type === user.type) return;
+    select.value = user.type;
+    this.changeType(user, type);
   }
 
   removeUser(id: number): void {

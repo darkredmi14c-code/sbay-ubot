@@ -75,6 +75,30 @@
   &.scammer { background: #fee2e2; color: #991b1b; }
 }
 
+.type-cell {
+  min-width: 140px;
+}
+
+.type-select {
+  width: 100%;
+  max-width: 150px;
+  padding: 0.3rem 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &.employer { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+  &.seeker { background: #dcfce7; color: #166534; border-color: #86efac; }
+  &.scammer { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+}
+
 .row-scammer {
   background: #fef2f2;
 }
@@ -221,6 +245,23 @@
   padding: 1rem 1.25rem;
   overflow-y: auto;
   flex: 1;
+}
+
+.modal-type-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.modal-type-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.modal-type-select {
+  max-width: 180px;
 }
 
 .modal-text {

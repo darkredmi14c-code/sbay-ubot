@@ -43,6 +43,8 @@
     </div>
   </div>
 
+  <p class="hint">AI noto'g'ri ajratgan bo'lsa, jadvaldagi <strong>Tip</strong> ustunidan qo'lda o'zgartiring.</p>
+
   @if (users.length === 0) {
     <p class="empty">Bu filtrda foydalanuvchi yo'q</p>
   } @else {
@@ -75,10 +77,18 @@
                   <span class="seen-mark" title="Ko'rilgan">✓</span>
                 }
               </td>
-              <td>
-                <span class="type-badge" [class]="typeBadgeClass(u.type)">
-                  {{ labels[u.type] }}
-                </span>
+              <td class="type-cell">
+                <select
+                  class="type-select"
+                  [class]="typeBadgeClass(u.type)"
+                  [value]="u.type"
+                  [disabled]="changingTypeId === u.id"
+                  (change)="onTypeSelect(u, $event)"
+                >
+                  @for (t of typeOptions; track t) {
+                    <option [value]="t">{{ labels[t] }}</option>
+                  }
+                </select>
               </td>
               <td>{{ u.firstName }} {{ u.lastName }}</td>
               <td>{{ u.username ? '@' + u.username : '—' }}</td>
@@ -116,9 +126,6 @@
                 @if (!u.seen) {
                   <button class="btn secondary btn-sm" (click)="markSeen(u)">Ko'rildi</button>
                 }
-                @if (u.type !== 'scammer') {
-                  <button class="btn danger btn-sm" (click)="markScammer(u)">Spam</button>
-                }
                 <button class="btn secondary btn-sm" (click)="removeUser(u.id)">O'chir</button>
               </td>
             </tr>
@@ -147,6 +154,20 @@
       </header>
 
       <div class="modal-body">
+        <div class="modal-type-row">
+          <span class="modal-type-label">Tip (AI xato bo'lsa o'zgartiring):</span>
+          <select
+            class="type-select modal-type-select"
+            [class]="typeBadgeClass(messageModalUser.type)"
+            [value]="messageModalUser.type"
+            [disabled]="changingTypeId === messageModalUser.id"
+            (change)="onTypeSelect(messageModalUser, $event)"
+          >
+            @for (t of typeOptions; track t) {
+              <option [value]="t">{{ labels[t] }}</option>
+            }
+          </select>
+        </div>
         <pre class="modal-text">{{ messageModalUser.originalText }}</pre>
       </div>
 
