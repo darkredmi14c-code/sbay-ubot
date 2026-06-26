@@ -59,3 +59,4 @@ bash scripts/pre-deploy-check.sh   # Deploy oldidan tekshiruv
 ```
 # sbay-ubot
 # sbay-ubot
+# sbay-ubot
