@@ -1,0 +1,77 @@
+<h1 class="page-title">Sozlamalar</h1>
+
+@if (error) { <div class="alert error">{{ error }}</div> }
+@if (message) { <div class="alert success">{{ message }}</div> }
+
+<div class="card">
+  <h2>Telegram kanallar</h2>
+  <p style="font-size: 0.875rem; color: #6b7280; margin: 0 0 1rem">
+    Userbot ushbu kanallarga xabarlarni forward qiladi. Kanal ID yoki &#64;username kiriting.
+    Userbot kanalga admin bo'lishi kerak.
+  </p>
+
+  <div class="form-row" style="flex-direction: column">
+    <label>E'lon beruvchilar kanali (employer)</label>
+    <input
+      [(ngModel)]="settings.employerChannelId"
+      placeholder="-100... yoki @employer_channel"
+    />
+  </div>
+
+  <div class="form-row" style="flex-direction: column; margin-top: 1rem">
+    <label>Ishchilar kanali (seeker)</label>
+    <input
+      [(ngModel)]="settings.seekerChannelId"
+      placeholder="-100... yoki @seeker_channel"
+    />
+  </div>
+
+  <button class="btn primary" style="margin-top: 1rem" (click)="save()">
+    Saqlash
+  </button>
+</div>
+
+<div class="card">
+  <h2>Xabar shablonlari</h2>
+  <p style="font-size: 0.875rem; color: #6b7280; margin: 0 0 1rem">
+    "Xabar yuborish" tugmasi bosilganda shu matn yuboriladi. O'zgaruvchilar:
+    <code>{{ '{' }}ism{{ '}' }}</code>,
+    <code>{{ '{' }}familiya{{ '}' }}</code>,
+    <code>{{ '{' }}username{{ '}' }}</code>,
+    <code>{{ '{' }}telefon{{ '}' }}</code>,
+    <code>{{ '{' }}fullName{{ '}' }}</code>
+  </p>
+
+  <div class="form-row" style="flex-direction: column">
+    <label>E'lon beruvchi (employer) xabari</label>
+    <textarea
+      [(ngModel)]="settings.employerMessageTemplate"
+      rows="6"
+      placeholder="Assalomu alaykum, {ism}! ..."
+    ></textarea>
+  </div>
+
+  <div class="form-row" style="flex-direction: column; margin-top: 1rem">
+    <label>Ishchi (seeker) xabari</label>
+    <textarea
+      [(ngModel)]="settings.seekerMessageTemplate"
+      rows="6"
+      placeholder="Assalomu alaykum, {ism}! ..."
+    ></textarea>
+  </div>
+
+  <button class="btn primary" style="margin-top: 1rem" (click)="save()">
+    Shablonlarni saqlash
+  </button>
+</div>
+
+<div class="card">
+  <h2>Backend (.env) sozlamalari</h2>
+  <p style="font-size: 0.875rem; color: #6b7280; line-height: 1.6">
+    Quyidagilar <code>backend/.env</code> faylida sozlanadi:<br />
+    <strong>TELEGRAM_API_ID</strong>, <strong>TELEGRAM_API_HASH</strong> — my.telegram.org<br />
+    <strong>TELEGRAM_SESSION</strong> — birinchi kirishdan keyin saqlanadi<br />
+    <strong>GROQ_API_KEY</strong> — bepul AI (console.groq.com)<br />
+    <strong>ADMIN_API_KEY</strong> — admin panel himoyasi (ixtiyoriy)
+  </p>
+</div>

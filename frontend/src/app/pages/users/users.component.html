@@ -1,0 +1,173 @@
+<h1 class="page-title">
+  Foydalanuvchilar
+  @if (unseenCount > 0) {
+    <span class="unseen-badge">{{ unseenCount }} yangi</span>
+  }
+</h1>
+
+@if (error) { <div class="alert error">{{ error }}</div> }
+@if (message) { <div class="alert success">{{ message }}</div> }
+
+<div class="card">
+  <h2>Spamchi qo'shish (Telegram ID)</h2>
+  <p class="hint">Bu ID li odamning barcha xabarlari e'tiborsiz qoldiriladi.</p>
+  <div class="form-row">
+    <input [(ngModel)]="blockUserId" placeholder="Masalan: 123456789" (keyup.enter)="blockById()" />
+    <button class="btn danger" (click)="blockById()">Bloklash</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="filter-row">
+    <span class="filter-label">Holat:</span>
+    <div class="filter-tabs">
+      <button [class.active]="seenFilter === 'new'" (click)="setSeenFilter('new')">
+        🆕 Yangi
+        @if (unseenCount > 0) { ({{ unseenCount }}) }
+      </button>
+      <button [class.active]="seenFilter === 'seen'" (click)="setSeenFilter('seen')">Ko'rilgan</button>
+      <button [class.active]="seenFilter === 'all'" (click)="setSeenFilter('all')">Hammasi</button>
+    </div>
+    @if (seenFilter === 'new' && unseenCount > 0) {
+      <button class="btn secondary btn-sm" (click)="markAllSeen()">Barchasini ko'rilgan qilish</button>
+    }
+  </div>
+
+  <div class="filter-row">
+    <span class="filter-label">Tip:</span>
+    <div class="filter-tabs">
+      <button [class.active]="typeFilter === 'all'" (click)="setTypeFilter('all')">Hammasi</button>
+      <button [class.active]="typeFilter === 'employer'" (click)="setTypeFilter('employer')">E'lon beruvchi</button>
+      <button [class.active]="typeFilter === 'seeker'" (click)="setTypeFilter('seeker')">Ishchi</button>
+      <button [class.active]="typeFilter === 'scammer'" (click)="setTypeFilter('scammer')">Spamchi</button>
+    </div>
+  </div>
+
+  @if (users.length === 0) {
+    <p class="empty">Bu filtrda foydalanuvchi yo'q</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Tip</th>
+            <th>Ism</th>
+            <th>Username</th>
+            <th>Telegram ID</th>
+            <th>Telefon</th>
+            <th>Guruh</th>
+            <th>Asl xabar</th>
+            <th>Sana</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of users; track u.id) {
+            <tr
+              [class.row-scammer]="u.type === 'scammer'"
+              [class.row-new]="!u.seen && u.type !== 'scammer'"
+            >
+              <td class="status-cell">
+                @if (!u.seen && u.type !== 'scammer') {
+                  <span class="new-dot" title="Yangi">●</span>
+                } @else if (u.seen) {
+                  <span class="seen-mark" title="Ko'rilgan">✓</span>
+                }
+              </td>
+              <td>
+                <span class="type-badge" [class]="typeBadgeClass(u.type)">
+                  {{ labels[u.type] }}
+                </span>
+              </td>
+              <td>{{ u.firstName }} {{ u.lastName }}</td>
+              <td>{{ u.username ? '@' + u.username : '—' }}</td>
+              <td><code>{{ u.telegramUserId }}</code></td>
+              <td>{{ u.phone ?? '—' }}</td>
+              <td>{{ u.sourceGroupTitle ?? u.sourceGroupId ?? '—' }}</td>
+              <td class="message-cell">
+                @if (u.originalText) {
+                  <button type="button" class="msg-preview" (click)="openMessage(u)">
+                    {{ previewText(u.originalText) }}
+                  </button>
+                } @else {
+                  <span class="muted">—</span>
+                }
+                @if (u.messageLink) {
+                  <a class="msg-link" [href]="u.messageLink" target="_blank" rel="noopener">Telegram</a>
+                }
+              </td>
+              <td>
+                {{ u.registeredAt | date:'dd.MM.yy HH:mm' }}
+                @if (u.messageSentAt) {
+                  <div class="sent-hint">📤 {{ u.messageSentAt | date:'dd.MM HH:mm' }}</div>
+                }
+              </td>
+              <td class="actions">
+                @if (u.type === 'employer' || u.type === 'seeker') {
+                  <button
+                    class="btn primary btn-sm"
+                    [disabled]="sendingId === u.id"
+                    (click)="sendMessage(u)"
+                  >
+                    {{ sendingId === u.id ? '...' : 'Xabar yuborish' }}
+                  </button>
+                }
+                @if (!u.seen) {
+                  <button class="btn secondary btn-sm" (click)="markSeen(u)">Ko'rildi</button>
+                }
+                @if (u.type !== 'scammer') {
+                  <button class="btn danger btn-sm" (click)="markScammer(u)">Spam</button>
+                }
+                <button class="btn secondary btn-sm" (click)="removeUser(u.id)">O'chir</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (messageModalUser) {
+  <div class="modal-backdrop" (click)="closeMessage()">
+    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <div>
+          <h2>Asl xabar</h2>
+          <p class="modal-sub">
+            {{ userDisplayName(messageModalUser) }}
+            @if (messageModalUser.username) {
+              <span class="muted">{{ '@' + messageModalUser.username }}</span>
+            }
+            · {{ messageModalUser.sourceGroupTitle ?? 'Guruh' }}
+          </p>
+        </div>
+        <button type="button" class="modal-close" (click)="closeMessage()" aria-label="Yopish">×</button>
+      </header>
+
+      <div class="modal-body">
+        <pre class="modal-text">{{ messageModalUser.originalText }}</pre>
+      </div>
+
+      <footer class="modal-footer">
+        @if (messageModalUser.messageLink) {
+          <a
+            class="btn secondary btn-sm"
+            [href]="messageModalUser.messageLink"
+            target="_blank"
+            rel="noopener"
+          >
+            Telegramda ochish
+          </a>
+        }
+        @if (!messageModalUser.seen && messageModalUser.type !== 'scammer') {
+          <button class="btn primary btn-sm" (click)="markSeen(messageModalUser); closeMessage()">
+            Ko'rildi
+          </button>
+        }
+        <button type="button" class="btn secondary btn-sm" (click)="closeMessage()">Yopish</button>
+      </footer>
+    </div>
+  </div>
+}

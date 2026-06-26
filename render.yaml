@@ -1,0 +1,53 @@
+# Render Blueprint — GitHub repo ulanganda avtomatik yaratiladi
+# https://render.com/docs/blueprint-spec
+
+services:
+  # ─── Asosiy Web Service (Backend + Frontend birgalikda) ───
+  - type: web
+    name: soatbay-kuzatuvchi
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: main
+    buildCommand: bash scripts/build-production.sh
+    startCommand: cd backend && node dist/main.js
+    healthCheckPath: /api/ping
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AI_PROVIDER
+        value: groq
+      - key: GROQ_MODEL
+        value: llama-3.1-8b-instant
+      - key: QUEUE_CONCURRENCY
+        value: "6"
+      - key: AI_QUEUE_CONCURRENCY
+        value: "2"
+      - key: TELEGRAM_API_ID
+        sync: false
+      - key: TELEGRAM_API_HASH
+        sync: false
+      - key: TELEGRAM_SESSION
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_API_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+
+  # ─── Keep-Alive Cron (har 10 daqiqada ping — uxlamaslik uchun) ───
+  - type: cron
+    name: soatbay-keepalive
+    runtime: node
+    region: frankfurt
+    plan: free
+    schedule: "*/10 * * * *"
+    buildCommand: echo "keepalive"
+    startCommand: curl -sf "$KEEPALIVE_URL/api/ping" || curl -sf "$KEEPALIVE_URL/api/health"
+    envVars:
+      - key: KEEPALIVE_URL
+        sync: false

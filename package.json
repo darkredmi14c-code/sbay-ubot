@@ -1,0 +1,14 @@
+{
+  "name": "soatbay-kuzatuvchi-userbot",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "bash scripts/build-production.sh",
+    "predeploy": "bash scripts/pre-deploy-check.sh",
+    "backend:dev": "cd backend && npm run start:dev",
+    "frontend:dev": "cd frontend && npm start",
+    "generate-api-key": "bash scripts/generate-api-key.sh"
+  }
+}

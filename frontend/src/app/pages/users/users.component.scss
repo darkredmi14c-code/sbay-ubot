@@ -1,0 +1,247 @@
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.unseen-badge {
+  display: inline-block;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.filter-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 600;
+  min-width: 40px;
+}
+
+.hint {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 0.75rem;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+
+  button {
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.875rem;
+
+    &.active {
+      background: #3b82f6;
+      color: #fff;
+      border-color: #3b82f6;
+    }
+  }
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.employer { background: #dbeafe; color: #1e40af; }
+  &.seeker { background: #dcfce7; color: #166534; }
+  &.scammer { background: #fee2e2; color: #991b1b; }
+}
+
+.row-scammer {
+  background: #fef2f2;
+}
+
+.row-new {
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+}
+
+.status-cell {
+  width: 28px;
+  text-align: center;
+}
+
+.new-dot {
+  color: #f59e0b;
+  font-size: 1.1rem;
+}
+
+.seen-mark {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+.sent-hint {
+  font-size: 0.7rem;
+  color: #16a34a;
+  margin-top: 0.15rem;
+}
+
+.message-cell {
+  max-width: 220px;
+  font-size: 0.8rem;
+
+  .muted {
+    color: #9ca3af;
+  }
+
+  .msg-preview {
+    display: block;
+    width: 100%;
+    margin: 0 0 0.25rem;
+    padding: 0;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    color: #1e40af;
+    font-size: inherit;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .msg-link {
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-decoration: none;
+
+    &:hover {
+      color: #3b82f6;
+      text-decoration: underline;
+    }
+  }
+}
+
+.actions {
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal {
+  width: min(640px, 100%);
+  max-height: min(85vh, 720px);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem 0.85rem;
+  border-bottom: 1px solid #e5e7eb;
+
+  h2 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+}
+
+.modal-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+
+  .muted {
+    margin-left: 0.25rem;
+  }
+}
+
+.modal-close {
+  border: none;
+  background: #f3f4f6;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #374151;
+
+  &:hover {
+    background: #e5e7eb;
+  }
+}
+
+.modal-body {
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #111827;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding: 0.85rem 1.25rem 1.1rem;
+  border-top: 1px solid #e5e7eb;
+}

@@ -1,0 +1,53 @@
+<h1 class="page-title">Kalit so'zlar</h1>
+
+@if (error) { <div class="alert error">{{ error }}</div> }
+@if (message) { <div class="alert success">{{ message }}</div> }
+
+<div class="card">
+  <h2>Bitta qo'shish</h2>
+  <div class="form-row">
+    <input [(ngModel)]="newWord" placeholder="Masalan: kunlik ish" (keyup.enter)="addOne()" />
+    <button class="btn primary" (click)="addOne()">Qo'shish</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Ro'yxat bilan qo'shish</h2>
+  <p style="font-size: 0.875rem; color: #6b7280; margin: 0 0 0.75rem">
+    Har bir qatorga bitta kalit so'z. Vergul yoki nuqta-vergul ham ishlaydi.
+  </p>
+  <textarea [(ngModel)]="bulkText" placeholder="kunlik ish&#10;ishchi kerak&#10;ish joyi"></textarea>
+  <div class="checkbox-row">
+    <input type="checkbox" id="replaceKw" [(ngModel)]="replaceAll" />
+    <label for="replaceKw">Eski ro'yxatni to'liq almashtirish</label>
+  </div>
+  <button class="btn primary" (click)="addBulk()">Ro'yxatni saqlash</button>
+</div>
+
+<div class="card">
+  <h2>Joriy ro'yxat ({{ keywords.length }})</h2>
+  @if (keywords.length === 0) {
+    <p class="empty">Hali kalit so'z yo'q</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>So'z</th>
+          <th>Qo'shilgan</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (kw of keywords; track kw.id) {
+          <tr>
+            <td><strong>{{ kw.word }}</strong></td>
+            <td>{{ kw.createdAt | date:'dd.MM.yyyy HH:mm' }}</td>
+            <td>
+              <button class="btn danger" (click)="remove(kw.id)">O'chirish</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

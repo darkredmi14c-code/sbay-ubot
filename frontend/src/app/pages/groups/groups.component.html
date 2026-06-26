@@ -1,0 +1,78 @@
+<h1 class="page-title">Kuzatiladigan guruhlar</h1>
+
+@if (error) { <div class="alert error">{{ error }}</div> }
+@if (message) { <div class="alert success">{{ message }}</div> }
+
+<div class="alert" style="background: #fef3c7; color: #92400e; border: 1px solid #fcd34d">
+  <strong>Muhim:</strong> Guruhlar alohida qo'shiladi (kalit so'zlar emas).
+  Userbot hisobingiz har bir guruhga a'zo bo'lishi kerak.
+  ID <code>-100...</code> ko'rinishida bo'lsa — kuzatuv faol.
+</div>
+
+<div class="card">
+  <h2>Bitta qo'shish</h2>
+  <p style="font-size: 0.875rem; color: #6b7280; margin: 0 0 0.75rem">
+    Guruh ID (-100...), &#64;username yoki t.me havolasi
+  </p>
+  <div class="form-row">
+    <input [(ngModel)]="newIdentifier" placeholder="-1001234567890 yoki @guruh_nomi" (keyup.enter)="addOne()" />
+    <button class="btn primary" (click)="addOne()">Qo'shish</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Ro'yxat bilan qo'shish</h2>
+  <textarea [(ngModel)]="bulkText" placeholder="https://t.me/kunlik_ish3&#10;https://t.me/Toshkent_ishchilar0&#10;@guruh_nomi"></textarea>
+  <div class="checkbox-row">
+    <input type="checkbox" id="replaceGr" [(ngModel)]="replaceAll" />
+    <label for="replaceGr">Eski ro'yxatni to'liq almashtirish</label>
+  </div>
+  <button class="btn primary" (click)="addBulk()">Ro'yxatni saqlash</button>
+</div>
+
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap">
+    <h2 style="margin: 0">Joriy guruhlar ({{ groups.length }})</h2>
+    <button class="btn" (click)="resolveAll()" [disabled]="resolving">
+      {{ resolving ? 'Hal qilinmoqda...' : 'ID larni yangilash' }}
+    </button>
+  </div>
+  @if (groups.length === 0) {
+    <p class="empty">Hali guruh qo'shilmagan</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Holat</th>
+          <th>Telegram ID</th>
+          <th>Nomi</th>
+          <th>Link</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (g of groups; track g.id) {
+          <tr>
+            <td>
+              @if (isResolved(g.telegramId)) {
+                <span class="badge ok">Faol</span>
+              } @else {
+                <span class="badge err">Kutilmoqda</span>
+              }
+            </td>
+            <td><code>{{ g.telegramId }}</code></td>
+            <td>{{ g.title ?? '—' }}</td>
+            <td>
+              @if (g.link) {
+                <a [href]="g.link" target="_blank">Ochish</a>
+              } @else { — }
+            </td>
+            <td>
+              <button class="btn danger" (click)="remove(g.id)">O'chirish</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

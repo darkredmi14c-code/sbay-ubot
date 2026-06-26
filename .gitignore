@@ -1,0 +1,10 @@
+node_modules/
+dist/
+data/
+*.db
+.env
+.env.local
+*.session
+.DS_Store
+coverage/
+backend/public/

@@ -1,0 +1,33 @@
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-icon">⏱</span>
+      <div>
+        <strong>Soatbay</strong>
+        <small>Kuzatuvchi</small>
+      </div>
+    </div>
+
+    <nav>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Bosh sahifa</a>
+      <a routerLink="/keywords" routerLinkActive="active">Kalit so'zlar</a>
+      <a routerLink="/groups" routerLinkActive="active">Guruhlar</a>
+      <a routerLink="/settings" routerLinkActive="active">Sozlamalar</a>
+      <a routerLink="/users" routerLinkActive="active">Foydalanuvchilar</a>
+    </nav>
+
+    <div class="api-key-box">
+      <label>API kalit (ixtiyoriy)</label>
+      <input
+        type="password"
+        [(ngModel)]="apiKeyInput"
+        placeholder="ADMIN_API_KEY"
+        (change)="saveApiKey()"
+      />
+    </div>
+  </aside>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

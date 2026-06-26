@@ -1,0 +1,88 @@
+<h1 class="page-title">Bosh sahifa</h1>
+
+@if (error) {
+  <div class="alert error">{{ error }}</div>
+}
+
+@if (stats) {
+  <div class="stats-grid">
+    <div class="stat-card" [class.success]="stats.telegram.connected">
+      <div class="label">Telegram</div>
+      <div class="value">{{ stats.telegram.connected ? 'Ulangan' : 'Ulanmagan' }}</div>
+    </div>
+    <div class="stat-card info">
+      <div class="label">Kalit so'zlar</div>
+      <div class="value">{{ stats.keywords }}</div>
+    </div>
+    <div class="stat-card info">
+      <div class="label">Guruhlar (faol)</div>
+      <div class="value">{{ stats.telegram.monitoredGroupsCount }}</div>
+    </div>
+    @if (stats.telegram.unresolvedGroupsCount > 0) {
+      <div class="stat-card warning">
+        <div class="label">Guruhlar (kutilmoqda)</div>
+        <div class="value">{{ stats.telegram.unresolvedGroupsCount }}</div>
+      </div>
+    }
+    <div class="stat-card">
+      <div class="label">E'lon beruvchilar</div>
+      <div class="value">{{ stats.employers }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Ishchilar</div>
+      <div class="value">{{ stats.seekers }}</div>
+    </div>
+    <div class="stat-card" style="--accent: #991b1b">
+      <div class="label">Spamlar (blok)</div>
+      <div class="value">{{ stats.scammers }}</div>
+    </div>
+    <div class="stat-card warning">
+      <div class="label">Yangi (ko'rilmagan)</div>
+      <div class="value">{{ stats.unseen }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Qabul qilingan xabarlar</div>
+      <div class="value">{{ stats.telegram.messagesReceived }}</div>
+    </div>
+    <div class="stat-card warning">
+      <div class="label">Navbatda</div>
+      <div class="value">{{ stats.telegram.queuePending }}</div>
+    </div>
+    <div class="stat-card success">
+      <div class="label">Nashr qilingan</div>
+      <div class="value">{{ stats.telegram.publishedTotal }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">O'tkazib yuborilgan</div>
+      <div class="value">{{ stats.telegram.skippedTotal }}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Telegram holati</h2>
+    <table>
+      <tr>
+        <th>Username</th>
+        <td>{{ stats.telegram.username ? '@' + stats.telegram.username : '—' }}</td>
+      </tr>
+      <tr>
+        <th>User ID</th>
+        <td>{{ stats.telegram.userId ?? '—' }}</td>
+      </tr>
+      <tr>
+        <th>Holat</th>
+        <td>
+          <span class="badge" [class.ok]="stats.telegram.connected" [class.err]="!stats.telegram.connected">
+            {{ stats.telegram.connected ? 'Faol' : 'Nofaol' }}
+          </span>
+        </td>
+      </tr>
+      @if (stats.telegram.lastError) {
+        <tr>
+          <th>Oxirgi xato</th>
+          <td style="color: #991b1b">{{ stats.telegram.lastError }}</td>
+        </tr>
+      }
+    </table>
+  </div>
+}
