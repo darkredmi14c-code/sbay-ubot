@@ -7,13 +7,14 @@ echo "==> Node versiya: $(node -v)"
 echo "==> Frontend build..."
 
 cd frontend
-npm ci
+# Render NODE_ENV=production qo'yadi — ng CLI devDependency, shuning uchun majburan o'rnatamiz
+npm ci --include=dev
 npm run build
 cd ..
 
 echo "==> Backend build..."
 cd backend
-npm ci
+npm ci --include=dev
 npm run build
 
 echo "==> Frontend ni backend/public ga nusxalash..."
