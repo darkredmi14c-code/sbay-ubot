@@ -15,17 +15,41 @@ export function buildTypeOrmConfig(
 
   if (databaseUrl) {
     const isSupabase = databaseUrl.includes('supabase');
+    const useIpv4 =
+      Boolean(process.env.RENDER) ||
+      config.get<string>('DATABASE_FORCE_IPV4') === 'true';
+
+    const extra = {
+      max: 10,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+      ...(useIpv4 ? { family: 4 } : {}),
+    };
+
+    // Render: db.xxx.supabase.co IPv6 ga resolve bo'ladi — family: 4 yoki pooler URL kerak
+    if (useIpv4) {
+      const parsed = new URL(databaseUrl);
+      return {
+        type: 'postgres',
+        host: parsed.hostname,
+        port: parsed.port ? Number(parsed.port) : 5432,
+        username: decodeURIComponent(parsed.username),
+        password: decodeURIComponent(parsed.password),
+        database: parsed.pathname.replace(/^\//, ''),
+        entities,
+        synchronize: true,
+        ssl: isSupabase ? { rejectUnauthorized: false } : undefined,
+        extra,
+      };
+    }
+
     return {
       type: 'postgres',
       url: databaseUrl,
       entities,
       synchronize: true,
       ssl: isSupabase ? { rejectUnauthorized: false } : undefined,
-      extra: {
-        max: 10,
-        idleTimeoutMillis: 30_000,
-        connectionTimeoutMillis: 10_000,
-      },
+      extra,
     };
   }
 

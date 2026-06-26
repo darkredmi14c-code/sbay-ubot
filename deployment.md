@@ -40,11 +40,14 @@ Ma'lumotlar saqlanishi uchun **SQLite yetmaydi** — Render qayta ishga tushgand
 3. Region: **Frankfurt**
 4. Project tayyor bo'lgach → **Settings** → **Database**
 5. **Connection string** → **URI** → **Use connection pooling** yoqing
-6. Parolni qo'yib, butun linkni nusxalang:
+6. **Transaction** rejimini tanlang (port **6543**)
+7. Parolni qo'yib, butun linkni nusxalang:
 
 ```
 postgresql://postgres.xxxxx:SIZNING_PAROL@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
 ```
+
+> **Muhim:** `db.xxxxx.supabase.co:5432` (to'g'ridan-to'g'ri) Render da **ishlamaydi** — IPv6 xatosi (`ENETUNREACH`) beradi. Faqat **pooler** URL ishlating.
 
 Bu — `DATABASE_URL`. Keyinroq Render ga qo'yasiz.
 
@@ -196,6 +199,7 @@ Render avtomatik qayta deploy qiladi.
 | Belgilar | Sabab | Nima qilish |
 |----------|-------|-------------|
 | Telegram: Ulanmagan | Session yo'q/noto'g'ri | testing.md → session oling → Render Environment ga qo'ying |
+| `ENETUNREACH` / IPv6 baza xatosi | Noto'g'ri Supabase URL (`db.xxx:5432`) | **Pooler** URL ishlating (6543 port, `pooler.supabase.com`) — QADAM 1 |
 | Ma'lumotlar yo'qoldi | DATABASE_URL yo'q | Supabase URL qo'shing (QADAM 1) |
 | Bot kech qayta ishlaydi | Uxlab qolgan | UptimeRobot qo'shing (QADAM 5) |
 | Admin panel 404 | Build xato | Render → Logs → `Build muvaffaqiyatli!` bormi? |
