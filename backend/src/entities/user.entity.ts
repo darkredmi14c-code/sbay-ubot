@@ -52,11 +52,11 @@ export class User {
   @Column({ default: false })
   seen!: boolean;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   seenAt!: Date | null;
 
   /** Shaxsiy xabar yuborilgan vaqt */
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   messageSentAt!: Date | null;
 
   @CreateDateColumn()
