@@ -200,6 +200,7 @@ Render avtomatik qayta deploy qiladi.
 |----------|-------|-------------|
 | Telegram: Ulanmagan | Session yo'q/noto'g'ri | testing.md → session oling → Render Environment ga qo'ying |
 | `ENETUNREACH` / IPv6 baza xatosi | Noto'g'ri Supabase URL (`db.xxx:5432`) | **Pooler** URL ishlating (6543 port, `pooler.supabase.com`) — QADAM 1 |
+| `datetime` not supported by postgres | Entity SQLite turi | Kod yangilangan — `git pull` / qayta deploy |
 | Ma'lumotlar yo'qoldi | DATABASE_URL yo'q | Supabase URL qo'shing (QADAM 1) |
 | Bot kech qayta ishlaydi | Uxlab qolgan | UptimeRobot qo'shing (QADAM 5) |
 | Admin panel 404 | Build xato | Render → Logs → `Build muvaffaqiyatli!` bormi? |
