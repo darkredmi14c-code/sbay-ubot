@@ -48,8 +48,8 @@ export class MessageProcessorService {
       `Kalit so'z topildi — AI navbatiga qo'shildi (${payload.chatTitle})`,
     );
 
-    const exists = await this.usersService.existsInDatabase(payload.senderId);
-    if (exists) {
+    const alreadyKnown = await this.usersService.syncExistingSender(payload);
+    if (alreadyKnown) {
       this.queueService.incrementSkipped();
       return;
     }

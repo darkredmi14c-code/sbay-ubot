@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
@@ -16,9 +17,12 @@ import { IncomingMessagePayload } from '../common/types';
 import { User, UserType } from '../entities/user.entity';
 import { SettingsService } from '../settings/settings.service';
 import { TelegramClientService } from '../telegram/telegram-client.service';
+import { toDirectMessageRecipient } from '../telegram/telegram-entity.util';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly repo: Repository<User>,
@@ -72,12 +76,29 @@ export class UsersService {
       .getCount();
   }
 
+  async syncExistingSender(payload: IncomingMessagePayload): Promise<boolean> {
+    const user = await this.findByTelegramId(payload.senderId);
+    if (!user) return false;
+
+    const hadHash = Boolean(user.telegramAccessHash);
+    const updated = await this.mergeSenderMeta(user, payload);
+    if (updated.telegramAccessHash && !hadHash) {
+      this.logger.log(
+        `Access hash saqlandi: ${payload.senderId} (@${payload.senderUsername ?? '—'})`,
+      );
+    }
+
+    return true;
+  }
+
   async saveFromMessage(
     payload: IncomingMessagePayload,
     type: 'employer' | 'seeker',
   ): Promise<User> {
     const existing = await this.findByTelegramId(payload.senderId);
-    if (existing) return existing;
+    if (existing) {
+      return this.mergeSenderMeta(existing, payload);
+    }
 
     return this.repo.save(
       this.repo.create({
@@ -87,6 +108,7 @@ export class UsersService {
         firstName: payload.senderFirstName,
         lastName: payload.senderLastName,
         phone: payload.senderPhone,
+        telegramAccessHash: payload.senderAccessHash,
         sourceGroupId: payload.chatId,
         sourceGroupTitle: payload.chatTitle,
         sourceMessageId: String(payload.messageId),
@@ -95,6 +117,58 @@ export class UsersService {
         seen: false,
       }),
     );
+  }
+
+  private async mergeSenderMeta(
+    user: User,
+    payload: IncomingMessagePayload,
+  ): Promise<User> {
+    let changed = false;
+
+    if (payload.senderUsername && user.username !== payload.senderUsername) {
+      user.username = payload.senderUsername;
+      changed = true;
+    }
+    if (payload.senderFirstName && user.firstName !== payload.senderFirstName) {
+      user.firstName = payload.senderFirstName;
+      changed = true;
+    }
+    if (payload.senderLastName && user.lastName !== payload.senderLastName) {
+      user.lastName = payload.senderLastName;
+      changed = true;
+    }
+    if (payload.senderPhone && user.phone !== payload.senderPhone) {
+      user.phone = payload.senderPhone;
+      changed = true;
+    }
+    if (payload.senderAccessHash && !user.telegramAccessHash) {
+      user.telegramAccessHash = payload.senderAccessHash;
+      changed = true;
+    }
+
+    // Hash hali yo'q — har yangi xabarda manba guruh/xabarni yangilab turamiz
+    if (!user.telegramAccessHash) {
+      if (payload.chatId) {
+        user.sourceGroupId = payload.chatId;
+        changed = true;
+      }
+      if (payload.chatTitle) {
+        user.sourceGroupTitle = payload.chatTitle;
+        changed = true;
+      }
+      if (payload.messageId) {
+        user.sourceMessageId = String(payload.messageId);
+        changed = true;
+      }
+    } else if (!user.sourceGroupId && payload.chatId) {
+      user.sourceGroupId = payload.chatId;
+      user.sourceGroupTitle = payload.chatTitle;
+      user.sourceMessageId = String(payload.messageId);
+      changed = true;
+    }
+
+    if (changed) return this.repo.save(user);
+    return user;
   }
 
   async blockAsScammer(
@@ -168,9 +242,19 @@ export class UsersService {
     const template = await this.settingsService.getMessageTemplate(
       user.type as 'employer' | 'seeker',
     );
+    if (!template?.trim()) {
+      throw new BadRequestException(
+        `${user.type === 'employer' ? 'Employer' : 'Seeker'} xabar shabloni bo'sh`,
+      );
+    }
+
     const text = renderMessageTemplate(template, user);
 
-    await this.sendWithFloodRetry(user.telegramUserId, text);
+    try {
+      await this.sendWithFloodRetry(user, text);
+    } catch (error) {
+      throw new BadRequestException(this.formatSendError(error));
+    }
 
     user.messageSentAt = new Date();
     user.seen = true;
@@ -180,17 +264,23 @@ export class UsersService {
     return { sent: text, user: saved };
   }
 
-  private async sendWithFloodRetry(
-    telegramUserId: string,
-    text: string,
-  ): Promise<void> {
+  private formatSendError(error: unknown): string {
+    const msg = (error as Error)?.message ?? String(error);
+    if (msg.includes('Telegram ulanmagan')) {
+      return 'Telegram ulanmagan — userbot holatini tekshiring';
+    }
+    return msg;
+  }
+
+  private async sendWithFloodRetry(user: User, text: string): Promise<void> {
+    const recipient = toDirectMessageRecipient(user);
     try {
-      await this.telegramService.sendDirectMessage(telegramUserId, text);
+      await this.telegramService.sendDirectMessage(recipient, text);
     } catch (error) {
       const floodSec = parseFloodWaitSeconds(error);
       if (!floodSec) throw error;
       await sleep((floodSec + 3) * 1000);
-      await this.telegramService.sendDirectMessage(telegramUserId, text);
+      await this.telegramService.sendDirectMessage(recipient, text);
     }
   }
 

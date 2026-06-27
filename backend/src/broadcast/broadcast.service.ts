@@ -22,6 +22,7 @@ import {
 import { User } from '../entities/user.entity';
 import { SettingsService } from '../settings/settings.service';
 import { TelegramClientService } from '../telegram/telegram-client.service';
+import { toDirectMessageRecipient } from '../telegram/telegram-entity.util';
 
 interface BroadcastSession {
   runId: number;
@@ -223,7 +224,7 @@ export class BroadcastService {
         }
 
         const text = renderMessageTemplate(template, user);
-        await this.sendWithFloodRetry(runId, user.telegramUserId, text);
+        await this.sendWithFloodRetry(runId, user, text);
 
         user.messageSentAt = new Date();
         user.seen = true;
@@ -362,20 +363,21 @@ export class BroadcastService {
 
   private async sendWithFloodRetry(
     runId: number,
-    telegramUserId: string,
+    user: User,
     text: string,
   ): Promise<void> {
+    const recipient = toDirectMessageRecipient(user);
     try {
-      await this.telegramService.sendDirectMessage(telegramUserId, text);
+      await this.telegramService.sendDirectMessage(recipient, text);
     } catch (error) {
       const floodSec = parseFloodWaitSeconds(error);
       if (!floodSec) throw error;
       this.logger.warn(
-        `Flood wait ${floodSec}s — qayta urinilmoqda (${telegramUserId})`,
+        `Flood wait ${floodSec}s — qayta urinilmoqda (${user.telegramUserId})`,
       );
       const ok = await this.interruptibleWait(runId, (floodSec + 3) * 1000);
       if (!ok) throw new Error('Bekor qilindi');
-      await this.telegramService.sendDirectMessage(telegramUserId, text);
+      await this.telegramService.sendDirectMessage(recipient, text);
     }
   }
 

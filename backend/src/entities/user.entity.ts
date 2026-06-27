@@ -55,6 +55,10 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   seenAt!: Date | null;
 
+  /** Shaxsiy xabar yuborish uchun Telegram access hash (birinchi ko'rishda saqlanadi) */
+  @Column({ type: 'text', nullable: true })
+  telegramAccessHash!: string | null;
+
   /** Shaxsiy xabar yuborilgan vaqt */
   @Column({ type: 'timestamp', nullable: true })
   messageSentAt!: Date | null;

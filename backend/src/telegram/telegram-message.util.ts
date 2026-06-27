@@ -41,6 +41,7 @@ export async function buildIncomingPayload(
   let senderFirstName: string | null = null;
   let senderLastName: string | null = null;
   let senderPhone: string | null = null;
+  let senderAccessHash: string | null = null;
 
   if (sender instanceof Api.User) {
     senderId = sender.id.toString();
@@ -48,6 +49,7 @@ export async function buildIncomingPayload(
     senderFirstName = sender.firstName ?? null;
     senderLastName = sender.lastName ?? null;
     senderPhone = sender.phone ?? null;
+    senderAccessHash = sender.accessHash?.toString() ?? null;
   } else if (message.senderId) {
     senderId = message.senderId.toString();
   } else if (message.fromId instanceof Api.PeerUser) {
@@ -66,6 +68,7 @@ export async function buildIncomingPayload(
     senderFirstName,
     senderLastName,
     senderPhone,
+    senderAccessHash,
     isBot,
     messageLink: buildTelegramMessageLink(chatId, message.id),
     canForward: !message.noforwards,

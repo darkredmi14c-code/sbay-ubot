@@ -14,9 +14,19 @@ export interface IncomingMessagePayload {
   senderFirstName: string | null;
   senderLastName: string | null;
   senderPhone: string | null;
+  senderAccessHash: string | null;
   isBot: boolean;
   messageLink: string | null;
   canForward: boolean;
+}
+
+/** Telegram DM yuborish uchun foydalanuvchini hal qilish ma'lumotlari */
+export interface DirectMessageRecipient {
+  telegramUserId: string;
+  username?: string | null;
+  accessHash?: string | null;
+  sourceGroupId?: string | null;
+  sourceMessageId?: string | null;
 }
 
 export interface TelegramStatus {
