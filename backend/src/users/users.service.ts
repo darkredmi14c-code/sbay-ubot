@@ -8,10 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Not, Repository } from 'typeorm';
-import {
-  parseFloodWaitSeconds,
-  sleep,
-} from '../common/telegram-flood.util';
+import { parseFloodWaitSeconds, sleep } from '../common/telegram-flood.util';
 import { renderMessageTemplate } from '../common/message-template.util';
 import { IncomingMessagePayload } from '../common/types';
 import { User, UserType } from '../entities/user.entity';
