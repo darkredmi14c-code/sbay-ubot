@@ -11,6 +11,7 @@ import { MessagesModule } from './messages/messages.module';
 import { QueueModule } from './queue/queue.module';
 import { SettingsModule } from './settings/settings.module';
 import { StatsModule } from './stats/stats.module';
+import { BroadcastModule } from './broadcast/broadcast.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { UsersModule } from './users/users.module';
 
@@ -37,6 +38,7 @@ const frontendPath = resolveFrontendPath();
     GroupsModule,
     UsersModule,
     SettingsModule,
+    BroadcastModule,
     AiModule,
     QueueModule,
     MessagesModule,

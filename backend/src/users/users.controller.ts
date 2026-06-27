@@ -64,16 +64,6 @@ export class UsersController {
     return this.usersService.markAllSeen(type);
   }
 
-  @Post('broadcast-messages')
-  broadcastMessages() {
-    return this.usersService.broadcastPendingMessages();
-  }
-
-  @Get('broadcast-messages/status')
-  broadcastStatus() {
-    return this.usersService.getBroadcastStatusFull();
-  }
-
   @Post(':id/send-message')
   sendMessage(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.sendMessage(id);

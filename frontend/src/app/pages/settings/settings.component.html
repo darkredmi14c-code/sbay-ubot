@@ -63,42 +63,12 @@
   <button class="btn primary" style="margin-top: 1rem" (click)="save()">
     Shablonlarni saqlash
   </button>
-</div>
 
-<div class="card">
-  <h2>Barchaga xabar yuborish</h2>
-  <p style="font-size: 0.875rem; color: #6b7280; margin: 0 0 1rem">
-    Yuqoridagi shablonlar bo'yicha xabar yuboriladi:
-    ish beruvchilarga employer shablon, ishchilarga seeker shablon.
-    <strong>Faqat hali xabar olmaganlarga</strong> yuboriladi (avval yuborilganlar o'tkazib yuboriladi).
+  <p style="font-size: 0.875rem; color: #6b7280; margin: 1rem 0 0">
+    Barchaga xabar yuborish va spam himoyasi:
+    <a routerLink="/broadcast">Massa yuborish</a>
+    sahifasida.
   </p>
-
-  @if (broadcastLimits) {
-    <ul style="font-size: 0.8rem; color: #6b7280; margin: 0 0 1rem; padding-left: 1.2rem; line-height: 1.5">
-      <li><strong>Bir marta bosish</strong> — dastur qolganlarini o'zi yuboradi</li>
-      <li>Har xabar orasida ~4–7 soniya, har 10 tadan keyin 2 daqiqa pauza</li>
-      <li>Soatlik limit: <strong>{{ broadcastLimits.sentThisHour }}/{{ broadcastLimits.maxPerHour }}</strong> (limit tugasa keyingi soatgacha kutadi)</li>
-    </ul>
-  }
-
-  @if (pendingMessages > 0) {
-    <p style="font-size: 0.875rem; color: #1e40af; margin: 0 0 1rem">{{ pendingMessages }} ta kutilmoqda</p>
-  } @else {
-    <p style="font-size: 0.875rem; color: #6b7280; margin: 0 0 1rem">Hamma olgan — yuborish kerak emas</p>
-  }
-
-  <button
-    class="btn primary"
-    [disabled]="pendingMessages === 0"
-    (click)="broadcastAll()"
-  >
-    {{ broadcasting ? 'Qayta boshlash' : 'Barcha yangilar ga yuborish' }}
-  </button>
-  @if (broadcasting) {
-    <p style="font-size: 0.8rem; color: #16a34a; margin: 0.75rem 0 0">
-      Yuborilmoqda... Sahifani yopishingiz mumkin, jarayon davom etadi.
-    </p>
-  }
 </div>
 
 <div class="card">

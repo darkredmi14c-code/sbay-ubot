@@ -73,3 +73,59 @@ export const USER_TYPE_LABELS: Record<UserType, string> = {
   seeker: 'Ishchi',
   scammer: 'Spamchi',
 };
+
+export type BroadcastPhase =
+  | 'idle'
+  | 'running'
+  | 'paused'
+  | 'waiting_limit'
+  | 'cooldown'
+  | 'completed'
+  | 'cancelled';
+
+export interface BroadcastSettings {
+  maxPerHour: number;
+  delayMs: number;
+  jitterMs: number;
+  pauseEvery: number;
+  pauseMs: number;
+}
+
+export interface BroadcastProgress {
+  runId: number;
+  phase: BroadcastPhase;
+  total: number;
+  processed: number;
+  sent: number;
+  failed: number;
+  skipped: number;
+  pendingQueue: number;
+  lastError: string | null;
+  currentUserId: number | null;
+  currentUserLabel: string | null;
+  waitUntil: string | null;
+  startedAt: string | null;
+  updatedAt: string;
+}
+
+export interface BroadcastStatus {
+  telegramConnected: boolean;
+  pendingRecipients: number;
+  settings: BroadcastSettings;
+  sentThisHour: number;
+  remainingThisHour: number;
+  active: boolean;
+  progress: BroadcastProgress | null;
+}
+
+export interface BroadcastStartResponse {
+  started: boolean;
+  pending: number;
+  restarted: boolean;
+  message: string;
+}
+
+export interface BroadcastActionResponse {
+  ok: boolean;
+  message: string;
+}

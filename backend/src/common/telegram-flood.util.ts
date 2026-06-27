@@ -6,6 +6,21 @@ export function parseFloodWaitSeconds(error: unknown): number | null {
   return Number.isFinite(sec) && sec > 0 ? sec : null;
 }
 
+/** Qayta urinish foydasiz — keyingi foydalanuvchiga o'tish kerak */
+export function isPermanentSendError(error: unknown): boolean {
+  const msg = ((error as Error)?.message ?? String(error)).toUpperCase();
+  return (
+    msg.includes('USER_PRIVACY_RESTRICTED') ||
+    msg.includes('PRIVACY') ||
+    msg.includes('PEER_ID_INVALID') ||
+    msg.includes('INPUT_USER_DEACTIVATED') ||
+    msg.includes('USER_IS_BOT') ||
+    msg.includes('COULD NOT FIND THE INPUT ENTITY') ||
+    msg.includes('ENTITY NOT FOUND') ||
+    msg.includes('ALLOW_PAYMENT_REQUIRED')
+  );
+}
+
 export function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }

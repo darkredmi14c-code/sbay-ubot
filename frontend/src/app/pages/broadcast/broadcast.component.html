@@ -1,0 +1,127 @@
+<h1 class="page-title">Massa xabar yuborish</h1>
+
+@if (error) { <div class="alert error">{{ error }}</div> }
+@if (message) { <div class="alert success">{{ message }}</div> }
+
+@if (status) {
+  <div class="stats-grid">
+    <div class="stat-card" [class.success]="status.telegramConnected" [class.warning]="!status.telegramConnected">
+      <div class="label">Telegram</div>
+      <div class="value" style="font-size: 1.1rem">
+        {{ status.telegramConnected ? 'Ulangan' : 'Uzilgan' }}
+      </div>
+    </div>
+    <div class="stat-card info">
+      <div class="label">Kutilmoqda</div>
+      <div class="value">{{ status.pendingRecipients }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Bu soat yuborilgan</div>
+      <div class="value">{{ status.sentThisHour }}/{{ status.settings.maxPerHour }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Bu soat qoldi</div>
+      <div class="value">{{ status.remainingThisHour }}</div>
+    </div>
+  </div>
+
+  <div class="card broadcast-live">
+    <div class="live-header">
+      <h2>Jonli holat</h2>
+      @if (status.progress) {
+        <span class="phase-badge" [attr.data-phase]="status.progress.phase">
+          {{ phaseLabel(status.progress.phase) }}
+        </span>
+      } @else {
+        <span class="phase-badge" data-phase="idle">Tayyor</span>
+      }
+    </div>
+
+    @if (status.progress) {
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="progressPercent()"></div>
+        </div>
+        <div class="progress-meta">
+          <span>{{ status.progress.processed }} / {{ status.progress.total }} qayta ishlandi</span>
+          <span>{{ progressPercent() }}%</span>
+        </div>
+      </div>
+
+      <div class="live-stats">
+        <div><strong>{{ status.progress.sent }}</strong> yuborildi</div>
+        <div><strong>{{ status.progress.failed }}</strong> xato</div>
+        <div><strong>{{ status.progress.skipped }}</strong> o'tkazildi</div>
+        <div><strong>{{ status.progress.pendingQueue }}</strong> navbatda</div>
+      </div>
+
+      @if (status.progress.currentUserLabel) {
+        <p class="current-user">
+          Hozir: <strong>{{ status.progress.currentUserLabel }}</strong>
+        </p>
+      }
+
+      @if (waitRemaining()) {
+        <p class="wait-note">Kutilmoqda: {{ waitRemaining() }}</p>
+      }
+
+      @if (status.progress.lastError) {
+        <p class="last-error">Oxirgi xato: {{ status.progress.lastError }}</p>
+      }
+    } @else {
+      <p class="empty-hint">
+        @if (status.pendingRecipients > 0) {
+          Boshlash tugmasini bosing — jarayon shu yerda jonli ko'rinadi.
+        } @else {
+          Hozir yuborish kerak bo'lgan foydalanuvchi yo'q.
+        }
+      </p>
+    }
+
+    <div class="action-row">
+      <button class="btn primary" [disabled]="!canStart()" (click)="start()">
+        {{ status.active ? 'Qayta boshlash' : 'Boshlash' }}
+      </button>
+      <button class="btn secondary" [disabled]="!canPause()" (click)="pause()">Pauza</button>
+      <button class="btn secondary" [disabled]="!canResume()" (click)="resume()">Davom etish</button>
+      <button class="btn danger" [disabled]="!canCancel()" (click)="cancel()">Bekor qilish</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Spam himoyasi</h2>
+    <p class="hint">
+      Soatlik limit va kechikishlarni shu yerda o'zgartiring. O'zgarishlar keyingi xabardan boshlab qo'llaniladi.
+      Xabar matnlari
+      <a routerLink="/settings">Sozlamalar</a>
+      sahifasida.
+    </p>
+
+    <div class="settings-grid">
+      <label>
+        Soatiga maksimal xabar
+        <input type="number" min="1" max="200" [(ngModel)]="settingsForm.maxPerHour" (ngModelChange)="onSettingsChange()" />
+      </label>
+      <label>
+        Xabar orasidagi kechikish (ms)
+        <input type="number" min="500" max="60000" [(ngModel)]="settingsForm.delayMs" (ngModelChange)="onSettingsChange()" />
+      </label>
+      <label>
+        Qo'shimcha tasodifiy kechikish (ms)
+        <input type="number" min="0" max="30000" [(ngModel)]="settingsForm.jitterMs" (ngModelChange)="onSettingsChange()" />
+      </label>
+      <label>
+        Har nechta xabardan keyin tanaffus
+        <input type="number" min="1" max="100" [(ngModel)]="settingsForm.pauseEvery" (ngModelChange)="onSettingsChange()" />
+      </label>
+      <label>
+        Tanaffus davomiyligi (ms)
+        <input type="number" min="1000" max="600000" [(ngModel)]="settingsForm.pauseMs" (ngModelChange)="onSettingsChange()" />
+      </label>
+    </div>
+
+    <button class="btn primary" [disabled]="savingSettings" (click)="saveSettings()">
+      {{ savingSettings ? 'Saqlanmoqda...' : 'Sozlamalarni saqlash' }}
+    </button>
+  </div>
+}

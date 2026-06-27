@@ -2,9 +2,12 @@ import {
   IsArray,
   IsBoolean,
   IsIn,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
+  Max,
+  Min,
   ArrayNotEmpty,
 } from 'class-validator';
 import { UserType } from '../entities/user.entity';
@@ -90,4 +93,36 @@ export class BlockUserDto {
 export class UpdateUserTypeDto {
   @IsIn(['employer', 'seeker', 'scammer'])
   type!: UserType;
+}
+
+export class UpdateBroadcastSettingsDto {
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  maxPerHour?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(500)
+  @Max(60_000)
+  delayMs?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(30_000)
+  jitterMs?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  pauseEvery?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1000)
+  @Max(600_000)
+  pauseMs?: number;
 }
