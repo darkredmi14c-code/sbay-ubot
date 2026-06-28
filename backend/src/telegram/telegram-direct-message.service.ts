@@ -1,9 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  Logger,
-  forwardRef,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Api, TelegramClient } from 'telegram';
 import bigInt from 'big-integer';
 import { DirectMessageRecipient } from '../common/types';
@@ -48,9 +43,7 @@ export class TelegramDirectMessageService {
     text: string,
   ): Promise<void> {
     const target: DirectMessageRecipient =
-      typeof recipient === 'string'
-        ? { telegramUserId: recipient }
-        : recipient;
+      typeof recipient === 'string' ? { telegramUserId: recipient } : recipient;
 
     const sendClient = this.getSendClient();
     if (!sendClient) {
@@ -153,7 +146,10 @@ export class TelegramDirectMessageService {
       }
 
       if (monitorUser?.phone) {
-        const byPhone = await this.resolveByPhone(sendClient, monitorUser.phone);
+        const byPhone = await this.resolveByPhone(
+          sendClient,
+          monitorUser.phone,
+        );
         if (byPhone) return byPhone;
       }
     } catch (error) {
