@@ -12,7 +12,7 @@ import { NewMessage, NewMessageEvent, Raw } from 'telegram/events';
 import { StringSession } from 'telegram/sessions';
 import input from 'input';
 import bigInt from 'big-integer';
-import { TelegramStatus, DirectMessageRecipient } from '../common/types';
+import { TelegramStatus } from '../common/types';
 import { GroupsService } from '../groups/groups.service';
 import { KeywordsService } from '../keywords/keywords.service';
 import { MessageProcessorService } from '../messages/message-processor.service';
@@ -22,7 +22,6 @@ import {
   buildIncomingPayload,
   getChatIdFromMessage,
 } from './telegram-message.util';
-import { resolveDirectMessageEntity } from './telegram-entity.util';
 
 @Injectable()
 export class TelegramClientService implements OnModuleInit, OnModuleDestroy {
@@ -307,48 +306,6 @@ export class TelegramClientService implements OnModuleInit, OnModuleDestroy {
         `Xabar qayta ishlash xatosi: ${(error as Error).message}`,
       );
     }
-  }
-
-  async sendDirectMessage(
-    recipient: string | DirectMessageRecipient,
-    text: string,
-  ): Promise<void> {
-    if (!this.client || !this.connected) {
-      throw new Error('Telegram ulanmagan');
-    }
-
-    const target: DirectMessageRecipient =
-      typeof recipient === 'string'
-        ? { telegramUserId: recipient }
-        : recipient;
-
-    await this.warmEntityCache(target);
-    const entity = await resolveDirectMessageEntity(this.client, target);
-    await this.client.sendMessage(entity, { message: text });
-    this.logger.log(`Xabar yuborildi: user ${target.telegramUserId}`);
-  }
-
-  /** Guruh va foydalanuvchi entity keshini yangilash */
-  private async warmEntityCache(target: DirectMessageRecipient): Promise<void> {
-    if (!this.client) return;
-
-    const warmIds = new Set<string>();
-    if (target.sourceGroupId?.trim()) {
-      warmIds.add(target.sourceGroupId.trim());
-    }
-    for (const groupId of this.groupsService.getCachedGroupIds().slice(0, 15)) {
-      warmIds.add(groupId);
-    }
-
-    await Promise.all(
-      [...warmIds].map(async (id) => {
-        try {
-          await this.client!.getEntity(id);
-        } catch {
-          // Guruh keshda bo'lmasa keyingi urinishda hal qilinadi
-        }
-      }),
-    );
   }
 
   getStatus(): TelegramStatus {

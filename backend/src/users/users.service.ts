@@ -13,7 +13,7 @@ import { renderMessageTemplate } from '../common/message-template.util';
 import { IncomingMessagePayload } from '../common/types';
 import { User, UserType } from '../entities/user.entity';
 import { SettingsService } from '../settings/settings.service';
-import { TelegramClientService } from '../telegram/telegram-client.service';
+import { TelegramDirectMessageService } from '../telegram/telegram-direct-message.service';
 import { toDirectMessageRecipient } from '../telegram/telegram-entity.util';
 
 @Injectable()
@@ -24,8 +24,8 @@ export class UsersService {
     @InjectRepository(User)
     private readonly repo: Repository<User>,
     private readonly settingsService: SettingsService,
-    @Inject(forwardRef(() => TelegramClientService))
-    private readonly telegramService: TelegramClientService,
+    @Inject(forwardRef(() => TelegramDirectMessageService))
+    private readonly directMessageService: TelegramDirectMessageService,
   ) {}
 
   async existsInDatabase(telegramUserId: string): Promise<boolean> {
@@ -272,12 +272,12 @@ export class UsersService {
   private async sendWithFloodRetry(user: User, text: string): Promise<void> {
     const recipient = toDirectMessageRecipient(user);
     try {
-      await this.telegramService.sendDirectMessage(recipient, text);
+      await this.directMessageService.sendDirectMessage(recipient, text);
     } catch (error) {
       const floodSec = parseFloodWaitSeconds(error);
       if (!floodSec) throw error;
       await sleep((floodSec + 3) * 1000);
-      await this.telegramService.sendDirectMessage(recipient, text);
+      await this.directMessageService.sendDirectMessage(recipient, text);
     }
   }
 

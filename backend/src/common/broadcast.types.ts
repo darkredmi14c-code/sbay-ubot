@@ -34,6 +34,12 @@ export interface BroadcastProgress {
 
 export interface BroadcastStatusResponse {
   telegramConnected: boolean;
+  senderAccount: {
+    mode: 'broadcast' | 'monitor';
+    username: string | null;
+    userId: string | null;
+  };
+  broadcastAccountConfigured: boolean;
   pendingRecipients: number;
   settings: BroadcastSettings;
   sentThisHour: number;

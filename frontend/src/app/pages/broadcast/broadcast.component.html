@@ -6,9 +6,15 @@
 @if (status) {
   <div class="stats-grid">
     <div class="stat-card" [class.success]="status.telegramConnected" [class.warning]="!status.telegramConnected">
-      <div class="label">Telegram</div>
-      <div class="value" style="font-size: 1.1rem">
-        {{ status.telegramConnected ? 'Ulangan' : 'Uzilgan' }}
+      <div class="label">Yuborish akkaunti</div>
+      <div class="value" style="font-size: 0.95rem">
+        @if (status.senderAccount.mode === 'broadcast') {
+          @{{ status.senderAccount.username ?? status.senderAccount.userId ?? '—' }}
+        } @else if (status.telegramConnected) {
+          Asosiy (kuzatuv)
+        } @else {
+          Uzilgan
+        }
       </div>
     </div>
     <div class="stat-card info">
@@ -95,6 +101,12 @@
       Xabar matnlari
       <a routerLink="/settings">Sozlamalar</a>
       sahifasida.
+      @if (!status.broadcastAccountConfigured) {
+        <br />
+        <strong>Alohida yuborish akkaunti:</strong> Render/.env da
+        <code>TELEGRAM_BROADCAST_SESSION</code>
+        qo'shing — kuzatish asosiy akkauntda qoladi, DM lar yangi akkauntdan ketadi.
+      }
     </p>
 
     <div class="settings-grid">

@@ -21,7 +21,8 @@ import {
 } from '../common/telegram-flood.util';
 import { User } from '../entities/user.entity';
 import { SettingsService } from '../settings/settings.service';
-import { TelegramClientService } from '../telegram/telegram-client.service';
+import { TelegramDirectMessageService } from '../telegram/telegram-direct-message.service';
+import { TelegramBroadcastClientService } from '../telegram/telegram-broadcast-client.service';
 import { toDirectMessageRecipient } from '../telegram/telegram-entity.util';
 
 interface BroadcastSession {
@@ -51,8 +52,9 @@ export class BroadcastService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly settingsService: SettingsService,
-    @Inject(forwardRef(() => TelegramClientService))
-    private readonly telegramService: TelegramClientService,
+    @Inject(forwardRef(() => TelegramDirectMessageService))
+    private readonly directMessageService: TelegramDirectMessageService,
+    private readonly broadcastClientService: TelegramBroadcastClientService,
   ) {}
 
   async getStatus(): Promise<BroadcastStatusResponse> {
@@ -64,8 +66,12 @@ export class BroadcastService {
     const remainingThisHour = Math.max(0, settings.maxPerHour - sentThisHour);
     const progress = this.buildProgress();
 
+    const senderAccount = this.directMessageService.getSenderAccount();
+
     return {
-      telegramConnected: this.telegramService.getStatus().connected,
+      telegramConnected: this.directMessageService.isSendReady(),
+      senderAccount,
+      broadcastAccountConfigured: this.broadcastClientService.isConfigured(),
       pendingRecipients,
       settings,
       sentThisHour,
@@ -87,9 +93,9 @@ export class BroadcastService {
     restarted: boolean;
     message: string;
   }> {
-    if (!this.telegramService.getStatus().connected) {
+    if (!this.directMessageService.isSendReady()) {
       throw new BadRequestException(
-        'Telegram ulanmagan — avval userbot ulanishini tekshiring',
+        'Xabar yuborish uchun Telegram ulanmagan — broadcast yoki asosiy akkauntni tekshiring',
       );
     }
 
@@ -182,7 +188,7 @@ export class BroadcastService {
       await this.waitForHourlyQuota(runId, settings.maxPerHour);
       if (this.isRunCancelled(runId)) return;
 
-      if (!this.telegramService.getStatus().connected) {
+      if (!this.directMessageService.isSendReady()) {
         session.lastError = 'Telegram uzildi';
         session.phase = 'cancelled';
         this.logger.error('Broadcast to\'xtatildi: Telegram ulanmagan');
@@ -368,7 +374,7 @@ export class BroadcastService {
   ): Promise<void> {
     const recipient = toDirectMessageRecipient(user);
     try {
-      await this.telegramService.sendDirectMessage(recipient, text);
+      await this.directMessageService.sendDirectMessage(recipient, text);
     } catch (error) {
       const floodSec = parseFloodWaitSeconds(error);
       if (!floodSec) throw error;
@@ -377,7 +383,7 @@ export class BroadcastService {
       );
       const ok = await this.interruptibleWait(runId, (floodSec + 3) * 1000);
       if (!ok) throw new Error('Bekor qilindi');
-      await this.telegramService.sendDirectMessage(recipient, text);
+      await this.directMessageService.sendDirectMessage(recipient, text);
     }
   }
 
