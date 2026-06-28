@@ -64,6 +64,13 @@ export class BroadcastComponent implements OnInit, OnDestroy {
     return PHASE_LABELS[phase] ?? phase;
   }
 
+  senderAccountLabel(): string {
+    const account = this.status?.senderAccount;
+    if (!account) return '—';
+    const name = account.username ?? account.userId ?? '—';
+    return account.username ? `@${name}` : name;
+  }
+
   progressPercent(): number {
     const p = this.status?.progress;
     if (!p || p.total === 0) return 0;

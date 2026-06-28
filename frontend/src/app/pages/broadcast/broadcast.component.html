@@ -9,7 +9,7 @@
       <div class="label">Yuborish akkaunti</div>
       <div class="value" style="font-size: 0.95rem">
         @if (status.senderAccount.mode === 'broadcast') {
-          @{{ status.senderAccount.username ?? status.senderAccount.userId ?? '—' }}
+          {{ senderAccountLabel() }}
         } @else if (status.telegramConnected) {
           Asosiy (kuzatuv)
         } @else {
