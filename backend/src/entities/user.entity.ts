@@ -4,6 +4,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { dbTimestampType } from '../config/column-types';
 
 /** employer = e'lon/ish beruvchi, seeker = ishchi, scammer = spamchi (bloklangan) */
 export type UserType = 'employer' | 'seeker' | 'scammer';
@@ -52,7 +53,7 @@ export class User {
   @Column({ default: false })
   seen!: boolean;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: dbTimestampType(), nullable: true })
   seenAt!: Date | null;
 
   /** Shaxsiy xabar yuborish uchun Telegram access hash (birinchi ko'rishda saqlanadi) */
@@ -60,7 +61,7 @@ export class User {
   telegramAccessHash!: string | null;
 
   /** Shaxsiy xabar yuborilgan vaqt */
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: dbTimestampType(), nullable: true })
   messageSentAt!: Date | null;
 
   @CreateDateColumn()

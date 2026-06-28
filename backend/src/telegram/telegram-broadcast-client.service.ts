@@ -7,7 +7,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Api, TelegramClient } from 'telegram';
 import { StringSession } from 'telegram/sessions';
-import input from 'input';
 
 export interface TelegramAccountStatus {
   configured: boolean;
@@ -30,7 +29,9 @@ export class TelegramBroadcastClientService
   constructor(private readonly config: ConfigService) {}
 
   isConfigured(): boolean {
-    return Boolean(this.config.get<string>('TELEGRAM_BROADCAST_SESSION')?.trim());
+    return Boolean(
+      this.config.get<string>('TELEGRAM_BROADCAST_SESSION')?.trim(),
+    );
   }
 
   isReady(): boolean {
@@ -58,15 +59,13 @@ export class TelegramBroadcastClientService
 
     if (!sessionString) {
       this.logger.log(
-        'TELEGRAM_BROADCAST_SESSION yo\'q — DM lar asosiy akkaunt orqali yuboriladi',
+        "TELEGRAM_BROADCAST_SESSION yo'q — DM lar asosiy akkaunt orqali yuboriladi",
       );
       return;
     }
 
     if (!apiId || !apiHash) {
-      this.logger.warn(
-        'Broadcast akkaunt uchun TELEGRAM_API_ID/HASH kerak',
-      );
+      this.logger.warn('Broadcast akkaunt uchun TELEGRAM_API_ID/HASH kerak');
       return;
     }
 
@@ -93,35 +92,11 @@ export class TelegramBroadcastClientService
     });
 
     try {
-      const isProduction =
-        this.config.get<string>('NODE_ENV') === 'production' ||
-        Boolean(this.config.get<string>('RENDER'));
-
-      if (sessionString) {
-        await this.client.connect();
-        if (!(await this.client.isUserAuthorized())) {
-          throw new Error(
-            'TELEGRAM_BROADCAST_SESSION yaroqsiz yoki muddati tugagan',
-          );
-        }
-      } else if (!isProduction) {
-        await this.client.start({
-          phoneNumber: async () =>
-            await input.text('Broadcast akkaunt telefoni (+998...): '),
-          password: async () =>
-            await input.text("Broadcast 2FA parol (bo'sh qoldiring): "),
-          phoneCode: async () =>
-            await input.text('Broadcast Telegram kodi: '),
-          onError: (err) => this.logger.error(err),
-        });
-
-        const newSession = this.client.session.save() as unknown as string;
-        if (newSession && newSession !== sessionString) {
-          this.logger.warn(
-            'Yangi TELEGRAM_BROADCAST_SESSION — .env ga saqlang!',
-          );
-          this.logger.warn(`TELEGRAM_BROADCAST_SESSION=${newSession}`);
-        }
+      await this.client.connect();
+      if (!(await this.client.isUserAuthorized())) {
+        throw new Error(
+          'TELEGRAM_BROADCAST_SESSION yaroqsiz yoki muddati tugagan',
+        );
       }
 
       const me = await this.client.getMe();

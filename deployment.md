@@ -91,7 +91,8 @@ git push -u origin main
 ```
 TELEGRAM_API_ID=12345678
 TELEGRAM_API_HASH=abcdef...
-TELEGRAM_SESSION=1BVtsOHwBu4T... (testing.md dan — uzun matn!)
+TELEGRAM_SESSION=1BVtsOHwBu4T... (kuzatuv — guruhlar, kanal)
+TELEGRAM_BROADCAST_SESSION=1AgA... (ixtiyoriy — faqat DM/massa yuborish; spam akkauntni ajratish uchun)
 GROQ_API_KEY=gsk_...
 DATABASE_URL=postgresql://postgres.xxxxx:PAROL@...supabase.com:6543/postgres
 NODE_ENV=production
@@ -104,7 +105,8 @@ AI_QUEUE_CONCURRENCY=2
 **Muhim qoidalar:**
 - `PORT` **QO'SHMANG** — Render o'zi beradi
 - `CORS_ORIGIN` — o'z Render URL ingiz (yuqoridagi misoldagi kabi)
-- `TELEGRAM_SESSION` — bo'sh qoldirmang!
+- `TELEGRAM_SESSION` — bo'sh qoldirmang! (kuzatuv)
+- `TELEGRAM_BROADCAST_SESSION` — ixtiyoriy; massa yuborish uchun alohida akkaunt (spamdan himoya)
 
 7. **Create Web Service** bosing → 5-10 daqiqa kuting
 
