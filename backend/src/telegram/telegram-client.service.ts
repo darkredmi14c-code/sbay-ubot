@@ -31,6 +31,7 @@ export class TelegramClientService implements OnModuleInit, OnModuleDestroy {
   private username: string | null = null;
   private userId: string | null = null;
   private messagesReceived = 0;
+  private connectionError: string | null = null;
   private readonly recentMessageKeys = new Set<string>();
   private reconnectTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -59,16 +60,17 @@ export class TelegramClientService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    const sessionString = this.config.get<string>('TELEGRAM_SESSION') ?? '';
+    const sessionString = this.cleanSession(
+      this.config.get<string>('TELEGRAM_SESSION'),
+    );
     const isProduction =
       this.config.get<string>('NODE_ENV') === 'production' ||
       Boolean(this.config.get<string>('RENDER'));
 
     if (!sessionString && isProduction) {
-      this.logger.error(
-        "TELEGRAM_SESSION bo'sh! Render da interaktiv kirish mumkin emas. " +
-          "Avval mahalliy kompyuterdan session oling va Environment ga qo'ying.",
-      );
+      this.connectionError =
+        "TELEGRAM_SESSION Render Environment da yo'q. Mahalliy .env dagi session ni qo'shing.";
+      this.logger.error(this.connectionError);
       return;
     }
 
@@ -139,11 +141,17 @@ export class TelegramClientService implements OnModuleInit, OnModuleDestroy {
       } catch {
         // push update sinxronlash ixtiyoriy
       }
+      this.connectionError = null;
       this.logger.log(`Telegram ulandi: @${this.username ?? this.userId}`);
     } catch (error) {
       this.connected = false;
-      this.logger.error(`Telegram ulanish xatosi: ${(error as Error).message}`);
+      this.connectionError = (error as Error).message;
+      this.logger.error(`Telegram ulanish xatosi: ${this.connectionError}`);
     }
+  }
+
+  private cleanSession(value: string | undefined): string {
+    return (value ?? '').trim().replace(/^["']|["']$/g, '');
   }
 
   private async ensureConnected(): Promise<void> {
@@ -310,10 +318,15 @@ export class TelegramClientService implements OnModuleInit, OnModuleDestroy {
 
   getStatus(): TelegramStatus {
     const queue = this.queueService.getStats();
+    const sessionConfigured = Boolean(
+      this.cleanSession(this.config.get<string>('TELEGRAM_SESSION')),
+    );
     return {
       connected: this.connected,
       username: this.username,
       userId: this.userId,
+      sessionConfigured,
+      connectionError: this.connected ? null : this.connectionError,
       monitoredGroupsCount: this.groupsService.getCachedGroupIds().length,
       unresolvedGroupsCount: this.groupsService.getUnresolvedCount(),
       keywordsCount: this.keywordsService.getCachedKeywords().length,

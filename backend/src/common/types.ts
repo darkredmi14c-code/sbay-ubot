@@ -33,6 +33,8 @@ export interface TelegramStatus {
   connected: boolean;
   username: string | null;
   userId: string | null;
+  sessionConfigured: boolean;
+  connectionError: string | null;
   monitoredGroupsCount: number;
   unresolvedGroupsCount: number;
   keywordsCount: number;

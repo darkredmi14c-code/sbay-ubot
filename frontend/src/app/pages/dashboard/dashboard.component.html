@@ -77,6 +77,20 @@
           </span>
         </td>
       </tr>
+      @if (!stats.telegram.sessionConfigured) {
+        <tr>
+          <th>Session</th>
+          <td style="color: #991b1b">
+            TELEGRAM_SESSION sozlanmagan — Render Environment ga qo'shing
+          </td>
+        </tr>
+      }
+      @if (stats.telegram.connectionError) {
+        <tr>
+          <th>Ulanish xatosi</th>
+          <td style="color: #991b1b">{{ stats.telegram.connectionError }}</td>
+        </tr>
+      }
       @if (stats.telegram.lastError) {
         <tr>
           <th>Oxirgi xato</th>
