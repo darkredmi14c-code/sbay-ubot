@@ -5,6 +5,11 @@ import { DirectMessageRecipient } from '../common/types';
 type SendMessageEntity = Parameters<TelegramClient['sendMessage']>[0];
 type GroupEntity = Parameters<TelegramClient['getMessages']>[0];
 
+export interface ResolveEntityOptions {
+  /** false = accessHash ishlatilmasin (boshqa akkaunt hash i bilan yuborishda) */
+  allowAccessHash?: boolean;
+}
+
 function matchesUserId(entity: unknown, telegramUserId: string): boolean {
   if (!entity || typeof entity !== 'object' || !('id' in entity)) return false;
   const id = (entity as { id?: { toString(): string } }).id;
@@ -93,10 +98,15 @@ async function resolveFromGroupMessage(
 export async function resolveDirectMessageEntity(
   client: TelegramClient,
   recipient: DirectMessageRecipient,
+  options: ResolveEntityOptions = {},
 ): Promise<SendMessageEntity> {
-  const inputPeer = buildInputPeerUser(recipient);
-  if (inputPeer) {
-    return inputPeer;
+  const allowAccessHash = options.allowAccessHash !== false;
+
+  if (allowAccessHash) {
+    const inputPeer = buildInputPeerUser(recipient);
+    if (inputPeer) {
+      return inputPeer;
+    }
   }
 
   const username = recipient.username?.replace(/^@/, '').trim();

@@ -106,7 +106,7 @@ AI_QUEUE_CONCURRENCY=2
 - `PORT` **QO'SHMANG** — Render o'zi beradi
 - `CORS_ORIGIN` — o'z Render URL ingiz (yuqoridagi misoldagi kabi)
 - `TELEGRAM_SESSION` — bo'sh qoldirmang! (kuzatuv)
-- `TELEGRAM_BROADCAST_SESSION` — ixtiyoriy; massa yuborish uchun alohida akkaunt (spamdan himoya)
+- `TELEGRAM_BROADCAST_SESSION` — ixtiyoriy; massa yuborish uchun alohida akkaunt (spamdan himoya). **Bu akkauntni kuzatiladigan guruhlarga ham qo'shing** — username yo'q foydalanuvchilarga DM yuborish uchun kerak.
 
 7. **Create Web Service** bosing → 5-10 daqiqa kuting
 

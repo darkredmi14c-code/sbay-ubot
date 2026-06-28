@@ -4,12 +4,16 @@ import {
   Logger,
   forwardRef,
 } from '@nestjs/common';
-import { TelegramClient } from 'telegram';
+import { Api, TelegramClient } from 'telegram';
+import bigInt from 'big-integer';
 import { DirectMessageRecipient } from '../common/types';
-import { GroupsService } from '../groups/groups.service';
+import { withTimeout } from '../common/telegram-flood.util';
 import { TelegramBroadcastClientService } from './telegram-broadcast-client.service';
 import { TelegramClientService } from './telegram-client.service';
 import { resolveDirectMessageEntity } from './telegram-entity.util';
+
+const SEND_TIMEOUT_MS = 60_000;
+const ENTITY_TIMEOUT_MS = 30_000;
 
 @Injectable()
 export class TelegramDirectMessageService {
@@ -19,7 +23,6 @@ export class TelegramDirectMessageService {
     @Inject(forwardRef(() => TelegramClientService))
     private readonly monitorService: TelegramClientService,
     private readonly broadcastService: TelegramBroadcastClientService,
-    private readonly groupsService: GroupsService,
   ) {}
 
   isSendReady(): boolean {
@@ -56,18 +59,22 @@ export class TelegramDirectMessageService {
 
     const monitorClient = this.monitorService.getClient();
     const broadcastClient = this.broadcastService.getClient();
+    const viaBroadcast = sendClient === broadcastClient;
 
-    if (monitorClient) {
-      await this.warmEntityCache(monitorClient, target);
-    }
+    await this.warmSourceGroup(sendClient, target);
 
-    const entity = await this.resolveEntity(
+    const entity = await this.resolveEntityForSend(
+      sendClient,
       monitorClient,
-      broadcastClient,
       target,
+      viaBroadcast,
     );
 
-    await sendClient.sendMessage(entity, { message: text });
+    await withTimeout(
+      sendClient.sendMessage(entity, { message: text }),
+      SEND_TIMEOUT_MS,
+      `Xabar yuborish vaqti tugadi (ID: ${target.telegramUserId})`,
+    );
 
     const sender = this.getSenderAccount();
     this.logger.log(
@@ -82,50 +89,145 @@ export class TelegramDirectMessageService {
     return this.monitorService.getClient();
   }
 
-  private async resolveEntity(
+  private async resolveEntityForSend(
+    sendClient: TelegramClient,
     monitorClient: TelegramClient | null,
-    broadcastClient: TelegramClient | null,
     target: DirectMessageRecipient,
+    viaBroadcast: boolean,
   ): Promise<Parameters<TelegramClient['sendMessage']>[0]> {
-    const clients = [broadcastClient, monitorClient].filter(
-      (c): c is TelegramClient => c !== null,
-    );
+    if (!viaBroadcast) {
+      return withTimeout(
+        resolveDirectMessageEntity(sendClient, target),
+        ENTITY_TIMEOUT_MS,
+        `Foydalanuvchi hal qilish vaqti tugadi (ID: ${target.telegramUserId})`,
+      );
+    }
+
+    const broadcastTarget: DirectMessageRecipient = {
+      ...target,
+      accessHash: null,
+    };
 
     let lastError: Error | null = null;
-    for (const client of clients) {
-      try {
-        return await resolveDirectMessageEntity(client, target);
-      } catch (error) {
-        lastError = error as Error;
+
+    try {
+      return await withTimeout(
+        resolveDirectMessageEntity(sendClient, broadcastTarget, {
+          allowAccessHash: false,
+        }),
+        ENTITY_TIMEOUT_MS,
+        `Foydalanuvchi hal qilish vaqti tugadi (ID: ${target.telegramUserId})`,
+      );
+    } catch (error) {
+      lastError = error as Error;
+    }
+
+    if (!monitorClient || monitorClient === sendClient) {
+      throw (
+        lastError ??
+        new Error(`Foydalanuvchi topilmadi (ID: ${target.telegramUserId})`)
+      );
+    }
+
+    try {
+      await this.warmSourceGroup(monitorClient, target);
+
+      await resolveDirectMessageEntity(monitorClient, target).catch(() => null);
+
+      const monitorUser = await withTimeout(
+        this.fetchUserOnClient(monitorClient, target.telegramUserId),
+        ENTITY_TIMEOUT_MS,
+        `Monitor foydalanuvchi vaqti tugadi (ID: ${target.telegramUserId})`,
+      );
+
+      if (monitorUser?.username) {
+        return withTimeout(
+          resolveDirectMessageEntity(
+            sendClient,
+            { ...broadcastTarget, username: monitorUser.username },
+            { allowAccessHash: false },
+          ),
+          ENTITY_TIMEOUT_MS,
+          `Foydalanuvchi hal qilish vaqti tugadi (ID: ${target.telegramUserId})`,
+        );
       }
+
+      if (monitorUser?.phone) {
+        const byPhone = await this.resolveByPhone(sendClient, monitorUser.phone);
+        if (byPhone) return byPhone;
+      }
+    } catch (error) {
+      lastError = error as Error;
     }
 
     throw (
       lastError ??
-      new Error(`Foydalanuvchi topilmadi (ID: ${target.telegramUserId})`)
+      new Error(
+        `Broadcast akkaunt foydalanuvchini topa olmadi (ID: ${target.telegramUserId}). ` +
+          `Yuborish akkauntini kuzatiladigan guruhlarga qo'shing yoki foydalanuvchida @username bo'lsin.`,
+      )
     );
   }
 
-  private async warmEntityCache(
+  private async fetchUserOnClient(
+    client: TelegramClient,
+    telegramUserId: string,
+  ): Promise<Api.User | null> {
+    try {
+      const entity = await client.getEntity(bigInt(telegramUserId));
+      return entity instanceof Api.User ? entity : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async resolveByPhone(
+    client: TelegramClient,
+    phone: string,
+  ): Promise<Parameters<TelegramClient['sendMessage']>[0] | null> {
+    const normalized = phone.startsWith('+') ? phone : `+${phone}`;
+    try {
+      const result = await withTimeout(
+        client.invoke(
+          new Api.contacts.ImportContacts({
+            contacts: [
+              new Api.InputPhoneContact({
+                clientId: bigInt(Date.now()),
+                phone: normalized,
+                firstName: 'User',
+                lastName: '',
+              }),
+            ],
+          }),
+        ),
+        ENTITY_TIMEOUT_MS,
+        'Telefon orqali qidirish vaqti tugadi',
+      );
+      const user = result.users?.[0];
+      if (user instanceof Api.User) {
+        return user;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
+  private async warmSourceGroup(
     client: TelegramClient,
     target: DirectMessageRecipient,
   ): Promise<void> {
-    const warmIds = new Set<string>();
-    if (target.sourceGroupId?.trim()) {
-      warmIds.add(target.sourceGroupId.trim());
-    }
-    for (const groupId of this.groupsService.getCachedGroupIds().slice(0, 15)) {
-      warmIds.add(groupId);
-    }
+    const groupId = target.sourceGroupId?.trim();
+    if (!groupId) return;
 
-    await Promise.all(
-      [...warmIds].map(async (id) => {
-        try {
-          await client.getEntity(id);
-        } catch {
-          // kuzatuvchi akkaunt guruhda bo'lmasa keyingi usul sinanadi
-        }
-      }),
-    );
+    try {
+      await withTimeout(
+        client.getEntity(groupId),
+        10_000,
+        `Guruh entity vaqti tugadi (${groupId})`,
+      );
+    } catch {
+      // broadcast akkaunt guruhda bo'lmasa keyingi usul sinanadi
+    }
   }
 }

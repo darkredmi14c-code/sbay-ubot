@@ -17,12 +17,37 @@ export function isPermanentSendError(error: unknown): boolean {
     msg.includes('USER_IS_BOT') ||
     msg.includes('COULD NOT FIND THE INPUT ENTITY') ||
     msg.includes('ENTITY NOT FOUND') ||
-    msg.includes('ALLOW_PAYMENT_REQUIRED')
+    msg.includes('ALLOW_PAYMENT_REQUIRED') ||
+    msg.includes('FOYDALANUVCHI TOPILMADI') ||
+    msg.includes('TOPA OLMADI') ||
+    msg.includes('VAQTI TUGADI') ||
+    msg.includes('TIMEOUT') ||
+    msg.includes("SHABLONI BO'SH")
   );
 }
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+export function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  message: string,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
 }
 
 /** Spam xavfini kamaytirish: bazaviy kechikish + tasodifiy qo'shimcha */

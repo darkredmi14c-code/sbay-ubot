@@ -18,6 +18,7 @@ import {
   isPermanentSendError,
   parseFloodWaitSeconds,
   sleep,
+  withTimeout,
 } from '../common/telegram-flood.util';
 import { User } from '../entities/user.entity';
 import { SettingsService } from '../settings/settings.service';
@@ -373,8 +374,15 @@ export class BroadcastService {
     text: string,
   ): Promise<void> {
     const recipient = toDirectMessageRecipient(user);
+    const sendOnce = () =>
+      this.directMessageService.sendDirectMessage(recipient, text);
+
     try {
-      await this.directMessageService.sendDirectMessage(recipient, text);
+      await withTimeout(
+        sendOnce(),
+        120_000,
+        `Xabar yuborish vaqti tugadi (${user.telegramUserId})`,
+      );
     } catch (error) {
       const floodSec = parseFloodWaitSeconds(error);
       if (!floodSec) throw error;
@@ -383,7 +391,11 @@ export class BroadcastService {
       );
       const ok = await this.interruptibleWait(runId, (floodSec + 3) * 1000);
       if (!ok) throw new Error('Bekor qilindi');
-      await this.directMessageService.sendDirectMessage(recipient, text);
+      await withTimeout(
+        sendOnce(),
+        120_000,
+        `Xabar yuborish vaqti tugadi (${user.telegramUserId})`,
+      );
     }
   }
 
