@@ -110,7 +110,8 @@ export class BroadcastService {
       };
     }
 
-    const restarted = this.session !== null && this.isActivePhase(this.session.phase);
+    const restarted =
+      this.session !== null && this.isActivePhase(this.session.phase);
     const runId = ++this.runId;
     this.session = {
       runId,
@@ -129,7 +130,10 @@ export class BroadcastService {
     };
 
     void this.runLoop(runId).finally(() => {
-      if (this.session?.runId === runId && this.isActivePhase(this.session.phase)) {
+      if (
+        this.session?.runId === runId &&
+        this.isActivePhase(this.session.phase)
+      ) {
         this.session.phase = 'completed';
       }
     });
@@ -151,7 +155,7 @@ export class BroadcastService {
 
   pause(): { ok: boolean; message: string } {
     if (!this.session || !this.isPausablePhase(this.session.phase)) {
-      return { ok: false, message: 'Pauza qilish uchun faol jarayon yo\'q' };
+      return { ok: false, message: "Pauza qilish uchun faol jarayon yo'q" };
     }
     this.session.phase = 'paused';
     this.session.waitUntil = null;
@@ -160,7 +164,7 @@ export class BroadcastService {
 
   resume(): { ok: boolean; message: string } {
     if (!this.session || this.session.phase !== 'paused') {
-      return { ok: false, message: 'Davom ettirish uchun pauza yo\'q' };
+      return { ok: false, message: "Davom ettirish uchun pauza yo'q" };
     }
     this.session.phase = 'running';
     return { ok: true, message: 'Davom etilmoqda' };
@@ -168,7 +172,7 @@ export class BroadcastService {
 
   cancel(): { ok: boolean; message: string } {
     if (!this.session || !this.isActivePhase(this.session.phase)) {
-      return { ok: false, message: 'Bekor qilish uchun faol jarayon yo\'q' };
+      return { ok: false, message: "Bekor qilish uchun faol jarayon yo'q" };
     }
     this.runId++;
     this.session.phase = 'cancelled';
@@ -192,7 +196,7 @@ export class BroadcastService {
       if (!this.directMessageService.isSendReady()) {
         session.lastError = 'Telegram uzildi';
         session.phase = 'cancelled';
-        this.logger.error('Broadcast to\'xtatildi: Telegram ulanmagan');
+        this.logger.error("Broadcast to'xtatildi: Telegram ulanmagan");
         return;
       }
 
@@ -225,7 +229,9 @@ export class BroadcastService {
       session.currentUserLabel = this.userLabel(user);
 
       try {
-        const template = await this.settingsService.getMessageTemplate(user.type);
+        const template = await this.settingsService.getMessageTemplate(
+          user.type,
+        );
         if (!template?.trim()) {
           throw new Error(`${user.type} xabar shabloni bo'sh`);
         }
@@ -403,7 +409,10 @@ export class BroadcastService {
     const session = this.session;
     if (!session) return null;
 
-    const pendingQueue = Math.max(0, session.userIds.length - session.processed);
+    const pendingQueue = Math.max(
+      0,
+      session.userIds.length - session.processed,
+    );
 
     return {
       runId: session.runId,
@@ -450,7 +459,9 @@ export class BroadcastService {
   ): number {
     const perMessageSec = (settings.delayMs + settings.jitterMs / 2) / 1000;
     const pausesCount =
-      pendingCount > 0 ? Math.floor((pendingCount - 1) / settings.pauseEvery) : 0;
+      pendingCount > 0
+        ? Math.floor((pendingCount - 1) / settings.pauseEvery)
+        : 0;
     const hoursNeeded =
       pendingCount > 0 ? Math.ceil(pendingCount / settings.maxPerHour) : 0;
 
@@ -462,7 +473,10 @@ export class BroadcastService {
   }
 
   private userLabel(user: User): string {
-    const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+    const name = [user.firstName, user.lastName]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
     return name || user.username || user.telegramUserId;
   }
 
@@ -481,9 +495,7 @@ export class BroadcastService {
 
   private isPausablePhase(phase: BroadcastPhase): boolean {
     return (
-      phase === 'running' ||
-      phase === 'waiting_limit' ||
-      phase === 'cooldown'
+      phase === 'running' || phase === 'waiting_limit' || phase === 'cooldown'
     );
   }
 

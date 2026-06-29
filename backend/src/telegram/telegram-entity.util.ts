@@ -122,10 +122,7 @@ export async function resolveDirectMessageEntity(
     return fromMessage;
   }
 
-  const byBigInt = await tryGetEntity(
-    client,
-    bigInt(recipient.telegramUserId),
-  );
+  const byBigInt = await tryGetEntity(client, bigInt(recipient.telegramUserId));
   if (byBigInt && matchesUserId(byBigInt, recipient.telegramUserId)) {
     return byBigInt;
   }

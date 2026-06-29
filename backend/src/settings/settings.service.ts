@@ -121,10 +121,7 @@ export class SettingsService {
       await this.set(SettingKeys.BROADCAST_DELAY_MS, String(partial.delayMs));
     }
     if (partial.jitterMs !== undefined) {
-      await this.set(
-        SettingKeys.BROADCAST_JITTER_MS,
-        String(partial.jitterMs),
-      );
+      await this.set(SettingKeys.BROADCAST_JITTER_MS, String(partial.jitterMs));
     }
     if (partial.pauseEvery !== undefined) {
       await this.set(
