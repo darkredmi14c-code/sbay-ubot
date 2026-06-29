@@ -80,13 +80,12 @@
               <td class="type-cell">
                 <select
                   class="type-select"
-                  [class]="typeBadgeClass(u.type)"
-                  [value]="u.type"
+                  [ngClass]="typeBadgeClass(u.type)"
                   [disabled]="changingTypeId === u.id"
                   (change)="onTypeSelect(u, $event)"
                 >
                   @for (t of typeOptions; track t) {
-                    <option [value]="t">{{ labels[t] }}</option>
+                    <option [value]="t" [selected]="u.type === t">{{ labels[t] }}</option>
                   }
                 </select>
               </td>
@@ -175,13 +174,12 @@
           <span class="modal-type-label">Tip (AI xato bo'lsa o'zgartiring):</span>
           <select
             class="type-select modal-type-select"
-            [class]="typeBadgeClass(messageModalUser.type)"
-            [value]="messageModalUser.type"
+            [ngClass]="typeBadgeClass(messageModalUser.type)"
             [disabled]="changingTypeId === messageModalUser.id"
             (change)="onTypeSelect(messageModalUser, $event)"
           >
             @for (t of typeOptions; track t) {
-              <option [value]="t">{{ labels[t] }}</option>
+              <option [value]="t" [selected]="messageModalUser.type === t">{{ labels[t] }}</option>
             }
           </select>
         </div>

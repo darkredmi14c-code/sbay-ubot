@@ -202,10 +202,12 @@ export class UsersComponent implements OnInit {
     });
   }
 
-  typeBadgeClass(type: UserType): string {
-    if (type === 'scammer') return 'scammer';
-    if (type === 'employer') return 'employer';
-    return 'seeker';
+  typeBadgeClass(type: UserType): Record<string, boolean> {
+    return {
+      employer: type === 'employer',
+      seeker: type === 'seeker',
+      scammer: type === 'scammer',
+    };
   }
 
   openMessage(user: UserRecord): void {
