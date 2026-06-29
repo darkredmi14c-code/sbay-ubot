@@ -54,6 +54,28 @@ export class UsersService {
     });
   }
 
+  async findPaginated(
+    type?: UserType,
+    seen?: boolean,
+    page = 1,
+    pageSize = 25,
+  ): Promise<{ items: User[]; total: number; page: number; pageSize: number }> {
+    const safePage = Math.max(1, page);
+    const safeSize = Math.min(100, Math.max(1, pageSize));
+    const where: FindOptionsWhere<User> = {};
+    if (type) where.type = type;
+    if (seen !== undefined) where.seen = seen;
+
+    const [items, total] = await this.repo.findAndCount({
+      where,
+      order: { seen: 'ASC', registeredAt: 'DESC' },
+      skip: (safePage - 1) * safeSize,
+      take: safeSize,
+    });
+
+    return { items, total, page: safePage, pageSize: safeSize };
+  }
+
   countByType(type: UserType): Promise<number> {
     return this.repo.count({ where: { type } });
   }

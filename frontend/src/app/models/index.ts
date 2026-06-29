@@ -70,6 +70,13 @@ export interface UserRecord {
   registeredAt: string;
 }
 
+export interface UsersPageResponse {
+  items: UserRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export const USER_TYPE_LABELS: Record<UserType, string> = {
   employer: 'E\'lon beruvchi',
   seeker: 'Ishchi',

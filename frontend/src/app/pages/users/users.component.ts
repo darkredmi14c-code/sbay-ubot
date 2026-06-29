@@ -2,7 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import { UserRecord, UserType, USER_TYPE_LABELS } from '../../models';
+import { UserRecord, UsersPageResponse, UserType, USER_TYPE_LABELS } from '../../models';
 
 type SeenFilter = 'all' | 'new' | 'seen';
 
@@ -18,10 +18,15 @@ export class UsersComponent implements OnInit {
   typeFilter: UserType | 'all' = 'all';
   seenFilter: SeenFilter = 'new';
   unseenCount = 0;
+  total = 0;
+  page = 1;
+  pageSize = 25;
+  readonly pageSizeOptions = [25, 50, 100];
   error = '';
   message = '';
   sendingId: number | null = null;
   changingTypeId: number | null = null;
+  loading = false;
 
   blockUserId = '';
   labels = USER_TYPE_LABELS;
@@ -35,6 +40,19 @@ export class UsersComponent implements OnInit {
     this.load();
   }
 
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.total / this.pageSize));
+  }
+
+  get rangeStart(): number {
+    if (this.total === 0) return 0;
+    return (this.page - 1) * this.pageSize + 1;
+  }
+
+  get rangeEnd(): number {
+    return Math.min(this.page * this.pageSize, this.total);
+  }
+
   loadStats(): void {
     this.api.get<{ unseen: number }>('/users/stats').subscribe({
       next: (data) => (this.unseenCount = data.unseen),
@@ -46,27 +64,49 @@ export class UsersComponent implements OnInit {
     if (this.typeFilter !== 'all') params.set('type', this.typeFilter);
     if (this.seenFilter === 'new') params.set('seen', 'false');
     if (this.seenFilter === 'seen') params.set('seen', 'true');
+    params.set('page', String(this.page));
+    params.set('pageSize', String(this.pageSize));
 
-    const qs = params.toString();
-    const path = qs ? `/users?${qs}` : '/users';
-
-    this.api.get<UserRecord[]>(path).subscribe({
+    this.loading = true;
+    this.api.get<UsersPageResponse>(`/users?${params}`).subscribe({
       next: (data) => {
-        this.users = data;
+        this.users = data.items;
+        this.total = data.total;
+        this.page = data.page;
+        this.pageSize = data.pageSize;
         this.error = '';
+        this.loading = false;
       },
-      error: () => (this.error = 'Yuklash xatosi'),
+      error: () => {
+        this.error = 'Yuklash xatosi';
+        this.loading = false;
+      },
     });
     this.loadStats();
   }
 
   setTypeFilter(type: UserType | 'all'): void {
     this.typeFilter = type;
+    this.page = 1;
     this.load();
   }
 
   setSeenFilter(seen: SeenFilter): void {
     this.seenFilter = seen;
+    this.page = 1;
+    this.load();
+  }
+
+  setPageSize(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.load();
+  }
+
+  goToPage(page: number): void {
+    const next = Math.min(this.totalPages, Math.max(1, page));
+    if (next === this.page) return;
+    this.page = next;
     this.load();
   }
 
@@ -105,10 +145,6 @@ export class UsersComponent implements OnInit {
       },
       error: () => (this.error = 'Xato'),
     });
-  }
-
-  markScammer(user: UserRecord): void {
-    this.changeType(user, 'scammer');
   }
 
   changeType(user: UserRecord, type: UserType): void {
@@ -181,7 +217,14 @@ export class UsersComponent implements OnInit {
     this.messageModalUser = null;
   }
 
-  previewText(text: string, max = 48): string {
+  previewText(text: string, max = 32): string {
+    const trimmed = text.trim();
+    if (trimmed.length <= max) return trimmed;
+    return `${trimmed.slice(0, max)}…`;
+  }
+
+  shortText(text: string | null | undefined, max = 14): string {
+    if (!text?.trim()) return '—';
     const trimmed = text.trim();
     if (trimmed.length <= max) return trimmed;
     return `${trimmed.slice(0, max)}…`;
@@ -192,6 +235,10 @@ export class UsersComponent implements OnInit {
     if (name) return name;
     if (user.username) return `@${user.username}`;
     return user.telegramUserId;
+  }
+
+  shortName(user: UserRecord): string {
+    return this.shortText(this.userDisplayName(user), 14);
   }
 
   @HostListener('document:keydown.escape')

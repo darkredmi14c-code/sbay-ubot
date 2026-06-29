@@ -45,21 +45,21 @@
 
   <p class="hint">AI noto'g'ri ajratgan bo'lsa, jadvaldagi <strong>Tip</strong> ustunidan qo'lda o'zgartiring.</p>
 
-  @if (users.length === 0) {
+  @if (loading) {
+    <p class="empty">Yuklanmoqda…</p>
+  } @else if (users.length === 0) {
     <p class="empty">Bu filtrda foydalanuvchi yo'q</p>
   } @else {
     <div class="table-wrap">
-      <table>
+      <table class="users-table">
         <thead>
           <tr>
             <th></th>
             <th>Tip</th>
             <th>Ism</th>
-            <th>Username</th>
-            <th>Telegram ID</th>
-            <th>Telefon</th>
+            <th>ID</th>
             <th>Guruh</th>
-            <th>Asl xabar</th>
+            <th>Xabar</th>
             <th>Sana</th>
             <th></th>
           </tr>
@@ -90,27 +90,24 @@
                   }
                 </select>
               </td>
-              <td>{{ u.firstName }} {{ u.lastName }}</td>
-              <td>{{ u.username ? '@' + u.username : '—' }}</td>
-              <td><code>{{ u.telegramUserId }}</code></td>
-              <td>{{ u.phone ?? '—' }}</td>
-              <td>{{ u.sourceGroupTitle ?? u.sourceGroupId ?? '—' }}</td>
+              <td class="cell-ellipsis" [title]="userDisplayName(u)">{{ shortName(u) }}</td>
+              <td class="cell-id"><code [title]="u.telegramUserId">{{ u.telegramUserId.slice(-8) }}</code></td>
+              <td class="cell-ellipsis" [title]="u.sourceGroupTitle ?? u.sourceGroupId ?? ''">
+                {{ shortText(u.sourceGroupTitle ?? u.sourceGroupId, 16) }}
+              </td>
               <td class="message-cell">
                 @if (u.originalText) {
-                  <button type="button" class="msg-preview" (click)="openMessage(u)">
+                  <button type="button" class="msg-preview" [title]="u.originalText" (click)="openMessage(u)">
                     {{ previewText(u.originalText) }}
                   </button>
                 } @else {
                   <span class="muted">—</span>
                 }
-                @if (u.messageLink) {
-                  <a class="msg-link" [href]="u.messageLink" target="_blank" rel="noopener">Telegram</a>
-                }
               </td>
-              <td>
-                {{ u.registeredAt | date:'dd.MM.yy HH:mm' }}
+              <td class="cell-date">
+                {{ u.registeredAt | date:'dd.MM.yy' }}
                 @if (u.messageSentAt) {
-                  <div class="sent-hint">📤 {{ u.messageSentAt | date:'dd.MM HH:mm' }}</div>
+                  <div class="sent-hint" title="Xabar yuborilgan">📤</div>
                 }
               </td>
               <td class="actions">
@@ -119,19 +116,39 @@
                     class="btn primary btn-sm"
                     [disabled]="sendingId === u.id"
                     (click)="sendMessage(u)"
+                    title="Xabar yuborish"
                   >
-                    {{ sendingId === u.id ? '...' : 'Xabar yuborish' }}
+                    {{ sendingId === u.id ? '…' : '📤' }}
                   </button>
                 }
                 @if (!u.seen) {
-                  <button class="btn secondary btn-sm" (click)="markSeen(u)">Ko'rildi</button>
+                  <button class="btn secondary btn-sm" (click)="markSeen(u)" title="Ko'rildi">✓</button>
                 }
-                <button class="btn secondary btn-sm" (click)="removeUser(u.id)">O'chir</button>
+                <button class="btn secondary btn-sm" (click)="removeUser(u.id)" title="O'chirish">✕</button>
               </td>
             </tr>
           }
         </tbody>
       </table>
+    </div>
+
+    <div class="pagination">
+      <span class="pagination-info">
+        {{ rangeStart }}–{{ rangeEnd }} / {{ total }}
+      </span>
+      <div class="pagination-controls">
+        <button class="btn secondary btn-sm" [disabled]="page <= 1" (click)="goToPage(page - 1)">←</button>
+        <span class="page-num">{{ page }} / {{ totalPages }}</span>
+        <button class="btn secondary btn-sm" [disabled]="page >= totalPages" (click)="goToPage(page + 1)">→</button>
+      </div>
+      <label class="page-size">
+        Sahifada
+        <select [ngModel]="pageSize" (ngModelChange)="setPageSize(+$event)">
+          @for (size of pageSizeOptions; track size) {
+            <option [value]="size">{{ size }}</option>
+          }
+        </select>
+      </label>
     </div>
   }
 </div>

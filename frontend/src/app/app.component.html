@@ -1,20 +1,43 @@
-<div class="layout">
+<div class="layout" [class.sidebar-collapsed]="sidebarCollapsed">
   <aside class="sidebar">
-    <div class="brand">
-      <span class="brand-icon">⏱</span>
-      <div>
-        <strong>Soatbay</strong>
-        <small>Kuzatuvchi</small>
+    <div class="sidebar-top">
+      <div class="brand">
+        <span class="brand-icon">⏱</span>
+        <div class="brand-text">
+          <strong>Soatbay</strong>
+          <small>Kuzatuvchi</small>
+        </div>
       </div>
+      <button
+        type="button"
+        class="sidebar-toggle"
+        (click)="toggleSidebar()"
+        [title]="sidebarCollapsed ? 'Menyuni ochish' : 'Menyuni yopish'"
+        [attr.aria-label]="sidebarCollapsed ? 'Menyuni ochish' : 'Menyuni yopish'"
+      >
+        {{ sidebarCollapsed ? '→' : '←' }}
+      </button>
     </div>
 
     <nav>
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Bosh sahifa</a>
-      <a routerLink="/keywords" routerLinkActive="active">Kalit so'zlar</a>
-      <a routerLink="/groups" routerLinkActive="active">Guruhlar</a>
-      <a routerLink="/settings" routerLinkActive="active">Sozlamalar</a>
-      <a routerLink="/broadcast" routerLinkActive="active">Massa yuborish</a>
-      <a routerLink="/users" routerLinkActive="active">Foydalanuvchilar</a>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" title="Bosh sahifa">
+        <span class="nav-icon">🏠</span><span class="nav-label">Bosh sahifa</span>
+      </a>
+      <a routerLink="/keywords" routerLinkActive="active" title="Kalit so'zlar">
+        <span class="nav-icon">🔑</span><span class="nav-label">Kalit so'zlar</span>
+      </a>
+      <a routerLink="/groups" routerLinkActive="active" title="Guruhlar">
+        <span class="nav-icon">👥</span><span class="nav-label">Guruhlar</span>
+      </a>
+      <a routerLink="/settings" routerLinkActive="active" title="Sozlamalar">
+        <span class="nav-icon">⚙️</span><span class="nav-label">Sozlamalar</span>
+      </a>
+      <a routerLink="/broadcast" routerLinkActive="active" title="Massa yuborish">
+        <span class="nav-icon">📢</span><span class="nav-label">Massa yuborish</span>
+      </a>
+      <a routerLink="/users" routerLinkActive="active" title="Foydalanuvchilar">
+        <span class="nav-icon">👤</span><span class="nav-label">Foydalanuvchilar</span>
+      </a>
     </nav>
 
     <div class="api-key-box">
@@ -29,6 +52,17 @@
   </aside>
 
   <main class="content">
+    @if (sidebarCollapsed) {
+      <button
+        type="button"
+        class="sidebar-open-fab"
+        (click)="toggleSidebar()"
+        title="Menyuni ochish"
+        aria-label="Menyuni ochish"
+      >
+        ☰
+      </button>
+    }
     <router-outlet />
   </main>
 </div>

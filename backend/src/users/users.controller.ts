@@ -25,7 +25,17 @@ export class UsersController {
   findAll(
     @Query('type') type?: UserType,
     @Query('seen', new ParseBoolPipe({ optional: true })) seen?: boolean,
+    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
+    @Query('pageSize', new ParseIntPipe({ optional: true })) pageSize?: number,
   ) {
+    if (page !== undefined || pageSize !== undefined) {
+      return this.usersService.findPaginated(
+        type,
+        seen,
+        page ?? 1,
+        pageSize ?? 25,
+      );
+    }
     return this.usersService.findAll(type, seen);
   }
 
